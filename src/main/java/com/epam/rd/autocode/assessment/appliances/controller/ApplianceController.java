@@ -20,36 +20,36 @@ import org.springframework.web.bind.annotation.*;
 public class ApplianceController {
 
     private final ApplianceService applianceService;
-    private final ManufacturerService manufacturerService; // Чтобы подставлять производителей
+    private final ManufacturerService manufacturerService;
 
     @GetMapping
     public String list(@PageableDefault(size = 10) Pageable pageable, Model model) {
         model.addAttribute("appliances", applianceService.getAll(pageable));
-        return "appliance/list";
+        return "appliance/appliances";
     }
 
-    @GetMapping("/create")
+    @GetMapping("/add")
     public String createForm(Model model) {
         model.addAttribute("appliance", new Appliance());
         model.addAttribute("manufacturers", manufacturerService.getAll());
         model.addAttribute("categories", Category.values());
         model.addAttribute("powerTypes", PowerType.values());
-        return "appliance/form";
+        return "appliance/newAppliance";
     }
 
-    @PostMapping
+    @PostMapping("/add-appliance")
     public String save(@ModelAttribute @Valid Appliance appliance, BindingResult result, Model model) {
         if (result.hasErrors()) {
             model.addAttribute("manufacturers", manufacturerService.getAll());
             model.addAttribute("categories", Category.values());
             model.addAttribute("powerTypes", PowerType.values());
-            return "appliance/form";
+            return "appliance/newAppliance";
         }
         applianceService.save(appliance);
         return "redirect:/appliances";
     }
 
-    @GetMapping("/delete/{id}")
+    @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         applianceService.delete(id);
         return "redirect:/appliances";

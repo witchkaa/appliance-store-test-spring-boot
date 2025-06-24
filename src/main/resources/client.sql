@@ -1,4 +1,4 @@
-INSERT INTO app_user (id, name, email, password) VALUES (1, 'Mercury','mercury@gmail.com','111');
+/*INSERT INTO app_user (id, name, email, password) VALUES (1, 'Mercury','mercury@gmail.com','111');
 INSERT INTO client (id, card) VALUES (1, '5326-1111');
 
 INSERT INTO app_user (id, name, email, password) VALUES (2, 'Venus','venus@gmail.com','222');
@@ -21,3 +21,4 @@ INSERT INTO client (id, card) VALUES (7, '5326-7777');
 
 INSERT INTO app_user (id, name, email, password) VALUES (8, 'Neptune','neptune@gmail.com','888');
 INSERT INTO client (id, card) VALUES (8, '5326-8888');
+ */

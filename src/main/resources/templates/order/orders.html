@@ -1,76 +1,57 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <!-- Latest compiled and minified CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Latest compiled JavaScript -->
+    <meta charset="UTF-8"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link th:href="@{/styles/css/main.css}" rel="stylesheet"/>
-    <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <title>Orders list</title>
 </head>
 <body>
 <header>
     <div th:insert="~{menunavy::navy}"></div>
 </header>
-<main>
+<main class="container mt-4">
     <h1 th:text="#{orders.header.list}">Orders list</h1>
     <table class="table table-hover">
-        <thead>
-        <tr class="table-dark">
-            <th>ID</th>
-            <th>Client</th>
-            <th>Employee</th>
-            <th>Approved</th>
-            <th>Amount</th>
+        <thead class="table-dark">
+        <tr>
+            <th th:text="#{orders.field.id}">ID</th>
+            <th th:text="#{orders.field.client}">Client</th>
+            <th th:text="#{orders.field.employee}">Employee</th>
+            <th th:text="#{orders.field.approved}">Approved</th>
+            <th th:text="#{orders.field.amount}">Amount</th>
             <th>Operation</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="order: ${orders}">
-            <td><span class="float-end" th:text="${order.id}"/></td>
-            <td><span class="float-end" th:text="${order.client}"/></td>
-            <td><span class="float-end" th:text="${order.employee}"/></td>
+        <tr th:each="order : ${orders}">
+            <td th:text="${order.id}"></td>
+            <td th:text="${order.client.name}"></td>
+            <td th:text="${order.employee.name}"></td>
             <td>
                 <div th:if="${order.approved}">
-                    <a th:href="@{orders/}+${order.id}+@{/unapproved}">
-                      <span class="icon">
-                        <i class="fa fa-check"></i>
-                      </span>
-
+                    <a th:href="@{/orders/unapproved/{id}(id=${order.id})}" title="Unapprove">
+                        <i class="fa fa-check text-success"></i>
                     </a>
                 </div>
-                <!-- ELSE -->
                 <div th:unless="${order.approved}">
-                    <a th:href="@{orders/}+${order.id}+@{/approved}">
-                    <span class="icon">
-                          <i class="fa fa-minus"></i>
-                    </span>
-
+                    <a th:href="@{/orders/approve/{id}(id=${order.id})}" title="Approve">
+                        <i class="fa fa-minus text-danger"></i>
                     </a>
                 </div>
             </td>
-            <td><span class="float-end" th:text="${order.getAmount}"/></td>
+            <td th:text="${order.getAmount()}"></td>
             <td>
-                <div>
-                    <a th:href="@{orders/}+${order.id}+@{/delete}">
-                        <i class="fa fa-times"></i>
-                    </a>
-                </div>
-                <div>
-                    <a th:href="@{orders/}+${order.id}+@{/edit}">
-                        <i class="fa fa-edit"></i>
-                    </a>
-                </div>
-
+                <a th:href="@{/orders/edit/{id}(id=${order.id})}" title="Edit"><i class="fa fa-edit"></i></a>
+                <a th:href="@{/orders/delete/{id}(id=${order.id})}" title="Delete" onclick="return confirm('Are you sure?')">
+                    <i class="fa fa-times text-danger"></i>
+                </a>
             </td>
         </tr>
         </tbody>
     </table>
-    <a th:href="@{orders/add}" class="btn btn-primary" th:text="#{orders.btn.new}"></a>
+    <a th:href="@{/orders/add}" class="btn btn-primary" th:text="#{orders.btn.new}">New Order</a>
 </main>
 <div th:insert="~{footer::footer}"></div>
 </body>

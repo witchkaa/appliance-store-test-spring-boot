@@ -19,23 +19,23 @@ public class ManufacturerController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("manufacturers", manufacturerService.getAll());
-        return "manufacturer/list";
+        return "manufacture/manufacturers";
     }
 
-    @GetMapping("/create")
+    @GetMapping("/add")
     public String createForm(Model model) {
         model.addAttribute("manufacturer", new Manufacturer());
-        return "manufacturer/form";
+        return "manufacture/newManufacturer";
     }
 
-    @PostMapping
+    @PostMapping("/add-manufacturer")
     public String save(@ModelAttribute @Valid Manufacturer manufacturer, BindingResult result) {
-        if (result.hasErrors()) return "manufacturer/form";
+        if (result.hasErrors()) return "manufacture/newManufacturer";
         manufacturerService.save(manufacturer);
         return "redirect:/manufacturers";
     }
 
-    @GetMapping("/delete/{id}")
+    @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         manufacturerService.delete(id);
         return "redirect:/manufacturers";

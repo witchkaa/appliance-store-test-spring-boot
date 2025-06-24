@@ -2,52 +2,53 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <!-- Latest compiled and minified CSS -->
+    <title>Appliances</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Latest compiled JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <title>Title</title>
 </head>
 <body>
-<header>
-    <div th:insert="~{menunavy::navy}"></div>
-</header>
-<main>
-    <h1 th:text="#{appliance.header.list}">Appliances list</h1>
-    <table class="table table-hover">
-        <thead>
-        <tr class="table-dark">
-            <th th:text="#{object.appliance.id}"></th>
-            <th th:text="#{object.appliance.name}"></th>
-            <th th:text="#{object.appliance.category}"></th>
-            <th th:text="#{object.appliance.model}"></th>
-            <th th:text="#{object.appliance.manufacturer}"></th>
-            <th th:text="#{object.appliance.powerType}"></th>
-            <th th:text="#{object.appliance.characteristic}"></th>
-            <th th:text="#{object.appliance.description}"></th>
-            <th th:text="#{object.appliance.power}"></th>
-            <th>Price</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="appliance: ${appliances}">
-            <td><span class="float-end" th:text="${appliance.id}"/></td>
-            <td th:text="${appliance.name}"/>
-            <td><span class="float-end" th:text="${appliance.category}"/></td>
-            <td th:text="${appliance.model}"/>
-            <td><span class="float-end" th:text="${appliance.manufacturer.getName()}"/></td>
-            <td th:text="${appliance.powerType}"/>
-            <td th:text="${appliance.characteristic}"/>
-            <td th:text="${appliance.description}"/>
-            <td><span class="float-end" th:text="${appliance.power}"/></td>
-            <td><span class="float-end" th:text="${appliance.price}"/></td>
-        </tr>
+<div th:insert="~{menunavy::navy}"></div>
 
-        </tbody>
-    </table>
-    <a th:href="@{appliances/add}" class="btn btn-primary" th:text="#{appliance.btn.new}">New appliance</a>
-</main>
+<h1 th:text="#{appliance.header.list}">Appliances List</h1>
+
+<table class="table table-hover">
+    <thead>
+    <tr class="table-dark">
+        <th th:text="#{object.appliance.id}">ID</th>
+        <th th:text="#{object.appliance.name}">Name</th>
+        <th th:text="#{object.appliance.category}">Category</th>
+        <th th:text="#{object.appliance.model}">Model</th>
+        <th th:text="#{object.appliance.manufacturer}">Manufacturer</th>
+        <th th:text="#{object.appliance.powerType}">Power Type</th>
+        <th th:text="#{object.appliance.characteristic}">Characteristic</th>
+        <th th:text="#{object.appliance.description}">Description</th>
+        <th th:text="#{object.appliance.power}">Power</th>
+        <th th:text="#{object.appliance.price}">Price</th>
+        <th th:text="#{operation}">Operation</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="appliance : ${appliances}">
+        <td th:text="${appliance.id}"></td>
+        <td th:text="${appliance.name}"></td>
+        <td th:text="${appliance.category}"></td>
+        <td th:text="${appliance.model}"></td>
+        <td th:text="${appliance.manufacturer.name}"></td>
+        <td th:text="${appliance.powerType}"></td>
+        <td th:text="${appliance.characteristic}"></td>
+        <td th:text="${appliance.description}"></td>
+        <td th:text="${appliance.power}"></td>
+        <td th:text="${appliance.price}"></td>
+        <td>
+            <a th:href="@{/appliances/{id}/delete(id=${appliance.id})}">
+                <i class="fa fa-minus"></i>
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<a th:href="@{/appliances/add}" class="btn btn-primary" th:text="#{appliance.btn.new}">New appliance</a>
+
 <div th:insert="~{footer::footer}"></div>
 </body>
 </html>

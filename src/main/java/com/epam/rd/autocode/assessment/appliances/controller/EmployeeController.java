@@ -13,28 +13,31 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/employees")
 @RequiredArgsConstructor
 public class EmployeeController {
+
     private final EmployeeService employeeService;
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("employee", employeeService.getAll());
-        return "employee/list";
+        model.addAttribute("employees", employeeService.getAll());
+        return "employee/employees";
     }
 
-    @GetMapping("/create")
+    @GetMapping("/add")
     public String createForm(Model model) {
         model.addAttribute("employee", new Employee());
-        return "employee/form";
+        return "employee/newEmployee";
     }
 
-    @PostMapping
+    @PostMapping("/add-employee")
     public String save(@ModelAttribute @Valid Employee employee, BindingResult result) {
-        if (result.hasErrors()) return "employee/form";
+        if (result.hasErrors()) {
+            return "employee/newEmployee";
+        }
         employeeService.save(employee);
         return "redirect:/employees";
     }
 
-    @GetMapping("/delete/{id}")
+    @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         employeeService.delete(id);
         return "redirect:/employees";

@@ -19,23 +19,23 @@ public class ClientController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("clients", clientService.getAll());
-        return "client/list";
+        return "client/clients"; // шаблон clients.html
     }
 
-    @GetMapping("/create")
+    @GetMapping("/add")
     public String createForm(Model model) {
         model.addAttribute("client", new Client());
-        return "client/form";
+        return "client/newClient"; // шаблон newClient.html
     }
 
-    @PostMapping
+    @PostMapping("/add-client")
     public String save(@ModelAttribute @Valid Client client, BindingResult result) {
-        if (result.hasErrors()) return "client/form";
+        if (result.hasErrors()) return "client/newClient";
         clientService.save(client);
         return "redirect:/clients";
     }
 
-    @GetMapping("/delete/{id}")
+    @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         clientService.delete(id);
         return "redirect:/clients";
