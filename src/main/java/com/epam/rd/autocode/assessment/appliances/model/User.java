@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 
 
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "app_user")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@MappedSuperclass
 public abstract class User {
 
     @Id
@@ -17,7 +19,9 @@ public abstract class User {
 
     private String name;
 
+    @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 }
