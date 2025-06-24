@@ -6,7 +6,6 @@ import com.epam.rd.autocode.assessment.appliances.model.Orders;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 public interface OrderService {
     List<Orders> getAll();
     List<Orders> getByClientId(Long clientId);
