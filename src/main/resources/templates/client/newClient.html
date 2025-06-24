@@ -14,27 +14,29 @@
 <h1 th:text="#{client.btn.new}"></h1>
 <form action="#" th:action="@{add-client}" th:object="${client}" method="post">
     <p>
-        <p th:if="${#fields.hasErrors('name')}" class="text-danger" th:text="#{user.name.is.mandatory}"></p>
-        <span th:text="#{object.user.name}">
-        </span> <input type="text" th:field="*{name}"/>
+        <label th:text="#{object.user.name}"></label>
+        <input type="text" th:field="*{name}" />
+    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></div>
     </p>
     <p>
-        <p th:if="${#fields.hasErrors('email')}" class="text-danger" th:text="#{user.email.is.correctly}"></p>
-        <p th:if="${#fields.hasErrors('email')}" class="text-danger" th:text="#{user.email.is.blank}"></p>
-        <span th:text="#{object.user.email}"></span>
-        <input type="text" th:field="*{email}"/>
+        <label th:text="#{object.user.email}"></label>
+        <input type="text" th:field="*{email}" />
+    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></div>
     </p>
     <p>
-        <p th:if="${#fields.hasErrors('password')}" class="text-danger" th:text="#{user.password.is.correctly}">Invalid password</p>
-        <span th:text="#{object.user.password}"></span>
-        <input type="text" th:field="*{password}"/>
+        <label th:text="#{object.user.password}"></label>
+        <input type="password" th:field="*{password}" />
+    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"></div>
     </p>
     <p>
-        <p th:if="${#fields.hasErrors('card')}" class="text-danger">Invalid card</p>
-        <span th:text="#{object.client.card}"></span>
-        <input type="text" th:field="*{card}"/>
+        <label th:text="#{object.client.card}"></label>
+        <input type="text" th:field="*{card}" />
+    <div th:if="${#fields.hasErrors('card')}" th:errors="*{card}" class="text-danger"></div>
     </p>
-    <p><input type="submit" value="Submit"/> <input type="reset" value="Reset"/></p>
+    <p>
+        <input type="submit" value="Submit" />
+        <input type="reset" value="Reset" />
+    </p>
 </form>
 <div th:insert="~{footer::footer}"></div>
 </body>

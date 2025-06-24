@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.Set;
@@ -16,10 +17,12 @@ public class Orders {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "{orders.employee.notnull}")
     @ManyToOne
     private Employee employee;
 
     @ManyToOne
+    @NotNull(message = "{orders.client.notnull}")
     private Client client;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
