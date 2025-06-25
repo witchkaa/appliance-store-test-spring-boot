@@ -5,6 +5,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.EmployeeRepository;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository repository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public List<Employee> getAll() {
         log.debug("Getting all employees from repository");
@@ -23,6 +25,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     public Employee save(Employee employee) {
         log.info("Saving employee to repository: {}", employee);
+        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
         return repository.save(employee);
     }
 
