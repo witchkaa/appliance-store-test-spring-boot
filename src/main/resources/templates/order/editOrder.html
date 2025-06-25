@@ -22,7 +22,10 @@
         </div>
         <div class="mb-3">
             <label th:text="#{object.order.employee}">Employee</label>
-            <input type="text" th:value="*{employee.name}" class="form-control" disabled/>
+            <input type="text"
+                   th:value="${order.employee != null ? order.employee.name : '—'}"
+                   class="form-control"
+                   disabled/>
         </div>
 
         <table class="table table-hover mt-4">
