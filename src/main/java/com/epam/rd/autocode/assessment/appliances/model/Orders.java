@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -17,7 +19,6 @@ public class Orders {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "{orders.employee.notnull}")
     @ManyToOne
     private Employee employee;
 
@@ -26,7 +27,12 @@ public class Orders {
     private Client client;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private Set<OrderRow> orderRowSet;
+    private Set<OrderRow> orderRowSet = new HashSet<>();
 
     private Boolean approved;
+    public BigDecimal getAmount() {
+        return orderRowSet.stream()
+                .map(row -> row.getAmount())  // assuming getAmount() returns BigDecimal
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Appliance Shop</title>
@@ -8,17 +9,26 @@
 <h1 th:text="#{index.welcome}">Welcome</h1>
 
 <p>
-    <a th:href="@{/clients}" th:text="#{menu.clients}">Clients</a> |
-    <a th:href="@{/employees}" th:text="#{menu.employees}">Employees</a> |
-    <a th:href="@{/manufacturers}" th:text="#{menu.manufacturers}">Manufacturers</a> |
-    <a th:href="@{/appliances}" th:text="#{menu.appliances}">Appliances</a> |
+    <!-- Доступне всім (і клієнтам, і працівникам) -->
     <a th:href="@{/orders}" th:text="#{menu.orders}">Orders</a>
 </p>
 
+<!-- Блок тільки для працівників -->
+<div sec:authorize="hasRole('EMPLOYEE')">
+    <p>
+        <a th:href="@{/clients}" th:text="#{menu.clients}">Clients</a> |
+        <a th:href="@{/employees}" th:text="#{menu.employees}">Employees</a> |
+        <a th:href="@{/manufacturers}" th:text="#{menu.manufacturers}">Manufacturers</a> |
+        <a th:href="@{/appliances}" th:text="#{menu.appliances}">Appliances</a>
+    </p>
+</div>
+
+<!-- Logout -->
 <p>
     <a th:href="@{/logout}" th:text="#{menu.logout}">Logout</a>
 </p>
 
+<!-- Мова -->
 <p>
     <a th:href="@{'/?lang=en'}">English</a>
     <a th:href="@{'/?lang=uk'}">Українська</a>

@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import com.epam.rd.autocode.assessment.appliances.model.OrderFormDto;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
@@ -13,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/orders")
@@ -35,21 +37,32 @@ public class OrdersController {
     public String createForm(Model model) {
         log.info("Opening order creation form");
         model.addAttribute("order", new Orders());
-        model.addAttribute("clients", clientService.getAll());
-        model.addAttribute("employees", employeeService.getAll());
+        model.addAttribute("appliances", ordersService.getAvailableAppliances());
         return "order/newOrder";
     }
 
     @PostMapping("/add-order")
-    public String save(@ModelAttribute @Valid Orders order, BindingResult result, Model model) {
-        if (result.hasErrors()) {
-            log.warn("Validation errors while saving new order: {}", result.getAllErrors());
-            model.addAttribute("clients", clientService.getAll());
-            model.addAttribute("employees", employeeService.getAll());
+    public String saveOrder(
+            @RequestParam("applianceIds") List<Long> applianceIds,
+            @RequestParam("quantities") List<Integer> quantities,
+            Model model) {
+
+        if (applianceIds == null || applianceIds.isEmpty()) {
+            model.addAttribute("error", "You must select at least one appliance.");
+            model.addAttribute("appliances", ordersService.getAvailableAppliances());
+            return "order/newOrder"; // Возврат на форму с ошибкой
+        }
+
+        if (applianceIds.size() != quantities.size()) {
+            model.addAttribute("error", "Mismatch between appliances and quantities.");
+            model.addAttribute("appliances", ordersService.getAvailableAppliances());
             return "order/newOrder";
         }
-        log.info("Saving new order: {}", order);
-        ordersService.save(order);
+
+        // Создаём заказ и добавляем товары с количествами
+        ordersService.createOrderWithItems(applianceIds, quantities);
+
+        // После успешного создания — редирект на список заказов
         return "redirect:/orders";
     }
 

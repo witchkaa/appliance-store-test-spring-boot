@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.service;
 
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
+import com.epam.rd.autocode.assessment.appliances.model.OrderFormDto;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
 
@@ -16,5 +17,7 @@ public interface OrderService {
     void unapprove(Long id);
     List<OrderRow> getOrderRows(Long orderId);
     List<Appliance> getAvailableAppliances();
+    public void createOrderWithItems(List<Long> applianceIds, List<Integer> quantities);
+    void createOrderWithAppliances(OrderFormDto orderForm);
     void addApplianceToOrder(Long orderId, Long applianceId, int numbers, BigDecimal price);
 }

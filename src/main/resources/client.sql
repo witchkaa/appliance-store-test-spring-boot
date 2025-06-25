@@ -1,24 +1,23 @@
-/*INSERT INTO app_user (id, name, email, password) VALUES (1, 'Mercury','mercury@gmail.com','111');
+INSERT INTO app_user (id, name, email, password, role) VALUES (1, 'Mercury','mercury@gmail.com','$2a$10$c6g2i6orrXXF09XYxjaybO1ZcJ/dEWv85Uh7fAIkNJDrY8oBVMXmm', 'CLIENT');
 INSERT INTO client (id, card) VALUES (1, '5326-1111');
 
-INSERT INTO app_user (id, name, email, password) VALUES (2, 'Venus','venus@gmail.com','222');
+INSERT INTO app_user (id, name, email, password) VALUES (2, 'Venus','venus@gmail.com','$2a$10$vOrN7B4XaVMGbjD/rSoXOe92OeXiU2QViROINwa5vBIGVzIkzKzKa');
 INSERT INTO client (id, card) VALUES (2, '5326-2222');
 
-INSERT INTO app_user (id, name, email, password) VALUES (3, 'Earth','earth@gmail.com','333');
+INSERT INTO app_user (id, name, email, password) VALUES (3, 'Earth','earth@gmail.com','$2a$10$M3KeaROiE5d.F0s4sA3UVeypFiOSeJYGsmcaPStT9ZQNsbUCI5rpe');
 INSERT INTO client (id, card) VALUES (3, '5326-3333');
 
-INSERT INTO app_user (id, name, email, password) VALUES (4, 'Mars','IamGod@gmail.com','444');
+INSERT INTO app_user (id, name, email, password) VALUES (4, 'Mars','IamGod@gmail.com','$2a$10$9mFGaeLHY.XndA7ZQdauEeVjAqKJrOZ0oNMnHYbwacAuBzSkE7NSW');
 INSERT INTO client (id, card) VALUES (4, '5326-4444');
 
-INSERT INTO app_user (id, name, email, password) VALUES (5, 'Jupiter','jupiter@gmail.com','55555');
+INSERT INTO app_user (id, name, email, password) VALUES (5, 'Jupiter','jupiter@gmail.com','$2a$10$3Ph/CQX6/2ET9oypHNMuK.fROytNBcA9IWcUKh03Uxuh6iA8hcanm');
 INSERT INTO client (id, card) VALUES (5, '5326-5555');
 
-INSERT INTO app_user (id, name, email, password) VALUES (6, 'Saturn','saturn@gmail.com','666');
+INSERT INTO app_user (id, name, email, password) VALUES (6, 'Saturn','saturn@gmail.com','$2a$10$4DrW1B3hU9sz9GW1ndH3mOl9oRC3gItDMt/ylfR5pN21kcYuYTxIS');
 INSERT INTO client (id, card) VALUES (6, '5326-6666');
 
-INSERT INTO app_user (id, name, email, password) VALUES (7, 'Uranus','uranus@gmail.com','777');
+INSERT INTO app_user (id, name, email, password) VALUES (7, 'Uranus','uranus@gmail.com','$2a$10$.AOrZ8IdpAejabZeP9yrU.ykEdxHh1vyyzFujw0B75/2K97uC8cuu');
 INSERT INTO client (id, card) VALUES (7, '5326-7777');
 
-INSERT INTO app_user (id, name, email, password) VALUES (8, 'Neptune','neptune@gmail.com','888');
+INSERT INTO app_user (id, name, email, password) VALUES (8, 'Neptune','neptune@gmail.com','$2a$10$.VC/2keKEh6iXDjdFtYSdO8FFNivPHGLUTcFWuDSxNEFEollVWtWC');
 INSERT INTO client (id, card) VALUES (8, '5326-8888');
- */

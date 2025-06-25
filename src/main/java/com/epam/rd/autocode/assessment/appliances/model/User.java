@@ -33,4 +33,7 @@ public abstract class User {
     @Size(min = 6, message = "{user.password.size}")
     @Column(nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }

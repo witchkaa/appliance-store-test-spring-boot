@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
@@ -27,31 +28,47 @@
         <tbody>
         <tr th:each="order : ${orders}">
             <td th:text="${order.id}"></td>
-            <td th:text="${order.client.name}"></td>
-            <td th:text="${order.employee.name}"></td>
+            <td th:text="${order.client != null} ? ${order.client.name} : '—'"></td>
+            <td th:text="${order.employee != null} ? ${order.employee.name} : '—'"></td>
             <td>
                 <div th:if="${order.approved}">
-                    <a th:href="@{/orders/unapproved/{id}(id=${order.id})}" title="Unapprove">
+                    <div sec:authorize="hasRole('EMPLOYEE')">
+                        <a th:href="@{/orders/unapproved/{id}(id=${order.id})}" title="Unapprove">
+                            <i class="fa fa-check text-success"></i>
+                        </a>
+                    </div>
+                    <div sec:authorize="!hasRole('EMPLOYEE')">
                         <i class="fa fa-check text-success"></i>
-                    </a>
+                    </div>
                 </div>
                 <div th:unless="${order.approved}">
-                    <a th:href="@{/orders/approve/{id}(id=${order.id})}" title="Approve">
+                    <div sec:authorize="hasRole('EMPLOYEE')">
+                        <a th:href="@{/orders/approve/{id}(id=${order.id})}" title="Approve">
+                            <i class="fa fa-minus text-danger"></i>
+                        </a>
+                    </div>
+                    <div sec:authorize="!hasRole('EMPLOYEE')">
                         <i class="fa fa-minus text-danger"></i>
-                    </a>
+                    </div>
                 </div>
             </td>
             <td th:text="${order.getAmount()}"></td>
             <td>
-                <a th:href="@{/orders/edit/{id}(id=${order.id})}" title="Edit"><i class="fa fa-edit"></i></a>
-                <a th:href="@{/orders/delete/{id}(id=${order.id})}" title="Delete" onclick="return confirm('Are you sure?')">
-                    <i class="fa fa-times text-danger"></i>
-                </a>
+                <div sec:authorize="hasRole('CLIENT')">
+                    <a th:href="@{/orders/edit/{id}(id=${order.id})}" title="Edit"><i class="fa fa-edit"></i></a>
+                    <a th:href="@{/orders/delete/{id}(id=${order.id})}" title="Delete"
+                       onclick="return confirm('Are you sure?')">
+                        <i class="fa fa-times text-danger"></i>
+                    </a>
+                </div>
             </td>
         </tr>
         </tbody>
     </table>
-    <a th:href="@{/orders/add}" class="btn btn-primary" th:text="#{orders.btn.new}">New Order</a>
+
+    <div sec:authorize="hasRole('CLIENT')">
+        <a th:href="@{/orders/add}" class="btn btn-primary" th:text="#{orders.btn.new}">New Order</a>
+    </div>
 </main>
 <div th:insert="~{footer::footer}"></div>
 </body>

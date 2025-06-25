@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface OrdersRepository extends JpaRepository<Orders, Long> {
     List<Orders> findByClient_Id(Long clientId);
+    List<Orders> findByClient_Email(String email);
 }

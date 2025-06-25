@@ -1,51 +1,62 @@
 package com.epam.rd.autocode.assessment.appliances.config;
 
+import com.epam.rd.autocode.assessment.appliances.service.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    private final CustomUserDetailsService userDetailsService;
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/employee/**").hasRole("EMPLOYEE")
-                        .requestMatchers("/client/**").hasRole("CLIENT")
+                        .requestMatchers("/employees/**").hasRole("EMPLOYEE")
+                        .requestMatchers("/clients/**").hasRole("EMPLOYEE")
+                        .requestMatchers("/appliances/**").hasRole("EMPLOYEE")
+                        .requestMatchers("/appliances").hasAnyRole("EMPLOYEE", "CLIENT")
+                        .requestMatchers("/manufacturers/**").hasRole("EMPLOYEE")
+                        .requestMatchers("/orders/approve/**", "/orders/unapproved/**").hasRole("EMPLOYEE")
+                        .requestMatchers("/orders/edit/**", "/orders/delete/**", "/orders/add/**", "/orders/add-order/**").hasRole("CLIENT")
+                        .requestMatchers("/orders/**").hasAnyRole("EMPLOYEE", "CLIENT")
                         .anyRequest().authenticated()
                 )
-                .formLogin(withDefaults())
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-                .headers(AbstractHttpConfigurer::disable); // for H2
+                .formLogin(Customizer.withDefaults())
+                .logout(Customizer.withDefaults());
 
         return http.build();
     }
-
     @Bean
-    public InMemoryUserDetailsManager userDetailsService() {
-        UserDetails employee = User.builder()
-                .username("employee")
-                .password("{noop}pass")
-                .roles("EMPLOYEE")
-                .build();
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
 
-        UserDetails client = User.builder()
-                .username("client")
-                .password("{noop}pass")
-                .roles("CLIENT")
-                .build();
+        authBuilder.userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder());
 
-        return new InMemoryUserDetailsManager(employee, client);
+        return authBuilder.build();
     }
 }
