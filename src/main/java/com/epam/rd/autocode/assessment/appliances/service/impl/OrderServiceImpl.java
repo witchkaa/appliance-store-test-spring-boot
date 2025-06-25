@@ -1,10 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.model.*;
-import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.OrderRowRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
+import com.epam.rd.autocode.assessment.appliances.repository.*;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +24,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRowRepository orderRowRepository;
     private final ApplianceRepository applianceRepository;
     private final ClientRepository clientRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public List<Orders> getAll() {
@@ -99,9 +97,15 @@ public class OrderServiceImpl implements OrderService {
         log.info("Approving order id {}", id);
         Orders order = getById(id);
         order.setApproved(true);
+        order.setEmployee(getCurrentEmployee());
         ordersRepository.save(order);
     }
+    private Employee getCurrentEmployee() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Employee not found with email: " + email));
+    }
     @Override
     public void unapprove(Long id) {
         if (!isEmployee()) {
@@ -111,6 +115,7 @@ public class OrderServiceImpl implements OrderService {
         log.info("Unapproving order id {}", id);
         ordersRepository.findById(id).ifPresent(order -> {
             order.setApproved(false);
+            order.setEmployee(getCurrentEmployee());
             ordersRepository.save(order);
         });
     }
@@ -187,7 +192,6 @@ public class OrderServiceImpl implements OrderService {
 
         ordersRepository.save(order);
     }
-    // !!!!!!!!!!
     private Client getCurrentClient() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return clientRepository.findByEmail(email)
