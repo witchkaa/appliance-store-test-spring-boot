@@ -9,7 +9,8 @@
 <div th:insert="~{menunavy::navy}"></div>
 
 <h1 th:text="#{manufacturer.header.list}">Manufacturer List</h1>
-
+<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 <table class="table table-hover">
     <thead>
     <tr class="table-dark">

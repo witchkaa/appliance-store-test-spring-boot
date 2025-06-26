@@ -5,6 +5,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerReposit
 import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,7 +32,11 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @Override
     public void delete(Long id) {
         log.warn("Deleting manufacturer with id {}", id);
-        manufacturerRepository.deleteById(id);
+        try {
+            manufacturerRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalStateException("Cannot delete manufacturer with existing appliances.");
+        }
     }
 
     @Override
