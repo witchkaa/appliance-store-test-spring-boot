@@ -13,13 +13,8 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public abstract class User {
-    public User(Long id, String name, String email, String password) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.password = password;
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,4 +33,7 @@ public abstract class User {
     @Size(min = 6, message = "{user.password.size}")
     @Column(nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
