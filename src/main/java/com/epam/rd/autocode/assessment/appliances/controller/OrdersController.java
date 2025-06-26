@@ -30,12 +30,10 @@ public class OrdersController {
     private final EmployeeService employeeService;
 
     @GetMapping
-    public String list(@PageableDefault(size = 5, sort = "id") Pageable pageable,
-                       Model model) {
+    public String list(@PageableDefault(size = 5, sort = "id") Pageable pageable, Model model) {
         log.info("Getting paginated order list");
         Page<Orders> ordersPage = ordersService.getAllPageable(pageable);
-        model.addAttribute("orders", ordersPage.getContent());
-        model.addAttribute("page", ordersPage);
+        model.addAttribute("orders", ordersPage);
         return "order/orders";
     }
 

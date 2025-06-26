@@ -2,46 +2,75 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <!-- Latest compiled and minified CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title th:text="#{client.btn.new}">New Client</title>
 
-    <!-- Latest compiled JavaScript -->
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <title>New client</title>
 </head>
 <body>
+<!-- Navigation -->
 <div th:insert="~{menunavy::navy}"></div>
-<h1 th:text="#{client.btn.new}"></h1>
-<form action="#" th:action="@{add-client}" th:object="${client}" method="post">
-    <p>
-        <label th:text="#{object.user.name}"></label>
-        <input type="text" th:field="*{name}" />
-    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></div>
-    </p>
-    <p>
-        <label th:text="#{object.user.email}"></label>
-        <input type="text" th:field="*{email}" />
-    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></div>
-    </p>
-    <p>
-        <label th:text="#{object.user.password}"></label>
-        <input type="password" th:field="*{password}" />
-    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"></div>
-    </p>
-    <p>
-        <label th:text="#{object.client.card}"></label>
-        <input type="text" th:field="*{card}" />
-    <div th:if="${#fields.hasErrors('card')}" th:errors="*{card}" class="text-danger"></div>
-    </p>
-    <p>
-        <input type="submit" value="Submit" />
-        <input type="reset" value="Reset" />
-    </p>
-</form>
+
+<!-- Main Content -->
+<div class="container mt-5">
+    <h2 class="mb-4 text-primary" th:text="#{client.btn.new}">New Client</h2>
+
+    <form th:action="@{add-client}" th:object="${client}" method="post" class="row g-3">
+
+        <!-- Name -->
+        <div class="col-md-6">
+            <label th:for="*{name}" class="form-label" th:text="#{object.user.name}">Name</label>
+            <input type="text" th:field="*{name}" class="form-control" placeholder="...">
+            <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-6">
+            <label th:for="*{email}" class="form-label" th:text="#{object.user.email}">Email</label>
+            <input type="email" th:field="*{email}" class="form-control" placeholder="example@mail.com">
+            <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        </div>
+
+        <!-- Password -->
+        <div class="col-md-6">
+            <label th:for="*{password}" class="form-label" th:text="#{object.user.password}">Password</label>
+            <input type="password" th:field="*{password}" class="form-control" placeholder="••••••••">
+            <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+        </div>
+
+        <!-- Card -->
+        <div class="col-md-6">
+            <label th:for="*{card}" class="form-label" th:text="#{object.client.card}">Card Number</label>
+            <input type="text" th:field="*{card}" class="form-control" placeholder="1234-5678">
+            <div class="text-danger" th:if="${#fields.hasErrors('card')}" th:errors="*{card}"></div>
+        </div>
+
+        <!-- Submit & Reset -->
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-success me-2">
+                <i class="bi bi-check-circle"></i>
+                <span th:text="#{btn.submit}">Submit</span>
+            </button>
+            <button type="reset" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Reset
+            </button>
+        </div>
+    </form>
+
+    <!-- Language Switch -->
+    <div class="mt-4">
+        <a th:href="@{/clients/add(lang='en')}" class="me-2">English</a>
+        <a th:href="@{/clients/add(lang='uk')}">Українська</a>
+    </div>
+</div>
+
+<!-- Footer -->
 <div th:insert="~{footer::footer}"></div>
-<p>
-    <a th:href="@{/clients/add(lang='en')}">English</a>
-    <a th:href="@{/clients/add(lang='uk')}">Українська</a>
-</p>
+
+<!-- Optionally include Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 </body>
 </html>

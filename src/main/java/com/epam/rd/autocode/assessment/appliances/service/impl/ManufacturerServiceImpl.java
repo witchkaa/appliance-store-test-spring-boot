@@ -5,10 +5,14 @@ import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerReposit
 import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Slf4j
@@ -16,7 +20,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ManufacturerServiceImpl implements ManufacturerService {
     private final ManufacturerRepository manufacturerRepository;
-
+    @Autowired
+    private MessageSource messageSource;
     @Override
     public List<Manufacturer> getAll() {
         log.debug("Fetching all manufacturers");
@@ -35,7 +40,9 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         try {
             manufacturerRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException("Cannot delete manufacturer with existing appliances.");
+            Locale locale = LocaleContextHolder.getLocale();
+            String message = messageSource.getMessage("error.manufacturer.delete", null, locale);
+            throw new IllegalStateException(message);
         }
     }
 

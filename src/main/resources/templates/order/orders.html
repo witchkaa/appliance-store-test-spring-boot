@@ -5,84 +5,83 @@
     <meta charset="UTF-8"/>
     <title th:text="#{orders.header.list}">Orders list</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
 </head>
-<body>
-<header>
-    <div th:insert="~{menunavy::navy}"></div>
-</header>
+<body style="background-color: #f8f9fa">
+<header th:insert="~{menunavy::navy}"></header>
 
-<main class="container mt-4">
-    <h1 th:text="#{orders.header.list}">Orders list</h1>
+<main class="container py-4">
+    <h1 class="mb-4 text-primary" th:text="#{orders.header.list}">Orders List</h1>
 
-    <table class="table table-hover">
-        <thead class="table-dark">
-        <tr>
-            <th th:text="#{orders.field.id}">ID</th>
-            <th th:text="#{orders.field.client}">Client</th>
-            <th th:text="#{orders.field.employee}">Employee</th>
-            <th th:text="#{orders.field.approved}">Approved</th>
-            <th th:text="#{orders.field.amount}">Amount</th>
-            <th>Operation</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="order : ${orders.content}">
-            <td th:text="${order.id}"></td>
-            <td th:text="${order.client != null} ? ${order.client.name} : '—'"></td>
-            <td th:text="${order.employee != null} ? ${order.employee.name} : '—'"></td>
-            <td>
-                <div th:if="${order.approved}">
-                    <div sec:authorize="hasRole('EMPLOYEE')">
-                        <a th:href="@{/orders/unapproved/{id}(id=${order.id})}" title="Unapprove">
-                            <i class="fa fa-check text-success"></i>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle bg-white shadow-sm rounded">
+            <thead class="table-primary">
+            <tr>
+                <th th:text="#{orders.field.id}">ID</th>
+                <th th:text="#{orders.field.client}">Client</th>
+                <th th:text="#{orders.field.employee}">Employee</th>
+                <th th:text="#{orders.field.approved}">Approved</th>
+                <th th:text="#{orders.field.amount}">Amount</th>
+                <th>Operation</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${orders.content}">
+                <td th:text="${order.id}"></td>
+                <td th:text="${order.client != null ? order.client.name : '—'}"></td>
+                <td th:text="${order.employee != null ? order.employee.name : '—'}"></td>
+                <td>
+                    <div th:if="${order.approved}">
+                        <div sec:authorize="hasRole('EMPLOYEE')">
+                            <a th:href="@{/orders/unapproved/{id}(id=${order.id})}" title="Unapprove">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            </a>
+                        </div>
+                        <div sec:authorize="!hasRole('EMPLOYEE')">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        </div>
+                    </div>
+                    <div th:unless="${order.approved}">
+                        <div sec:authorize="hasRole('EMPLOYEE')">
+                            <a th:href="@{/orders/approve/{id}(id=${order.id})}" title="Approve">
+                                <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                            </a>
+                        </div>
+                        <div sec:authorize="!hasRole('EMPLOYEE')">
+                            <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                        </div>
+                    </div>
+                </td>
+                <td th:text="${order.amount} + ' $'"></td>
+                <td>
+                    <div sec:authorize="hasRole('CLIENT')">
+                        <a th:href="@{/orders/edit/{id}(id=${order.id})}" title="Edit" class="me-2">
+                            <i class="bi bi-pencil-square text-primary fs-5"></i>
+                        </a>
+                        <a th:href="@{/orders/delete/{id}(id=${order.id})}" title="Delete"
+                           onclick="return confirm('Are you sure?')">
+                            <i class="bi bi-trash3-fill text-danger fs-5"></i>
                         </a>
                     </div>
-                    <div sec:authorize="!hasRole('EMPLOYEE')">
-                        <i class="fa fa-check text-success"></i>
-                    </div>
-                </div>
-                <div th:unless="${order.approved}">
-                    <div sec:authorize="hasRole('EMPLOYEE')">
-                        <a th:href="@{/orders/approve/{id}(id=${order.id})}" title="Approve">
-                            <i class="fa fa-minus text-danger"></i>
-                        </a>
-                    </div>
-                    <div sec:authorize="!hasRole('EMPLOYEE')">
-                        <i class="fa fa-minus text-danger"></i>
-                    </div>
-                </div>
-            </td>
-            <td th:text="${order.amount}"></td>
-            <td>
-                <div sec:authorize="hasRole('CLIENT')">
-                    <a th:href="@{/orders/edit/{id}(id=${order.id})}" title="Edit"><i class="fa fa-edit"></i></a>
-                    <a th:href="@{/orders/delete/{id}(id=${order.id})}" title="Delete"
-                       onclick="return confirm('Are you sure?')">
-                        <i class="fa fa-times text-danger"></i>
-                    </a>
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
-    <!-- Pagination controls -->
-    <nav th:if="${orders.totalPages > 1}">
+    <!-- Pagination -->
+    <nav th:if="${orders.totalPages > 1}" class="mt-4">
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
                 <a class="page-link" th:href="@{/orders(page=${orders.number - 1})}" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
-
             <li class="page-item"
                 th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}"
                 th:classappend="${orders.number == i} ? 'active'">
                 <a class="page-link" th:href="@{/orders(page=${i})}" th:text="${i + 1}">1</a>
             </li>
-
             <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
                 <a class="page-link" th:href="@{/orders(page=${orders.number + 1})}" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
@@ -91,20 +90,20 @@
         </ul>
     </nav>
 
-    <!-- Add order button -->
-    <div sec:authorize="hasRole('CLIENT')" class="mt-3">
-        <a th:href="@{/orders/add}" class="btn btn-primary" th:text="#{orders.btn.new}">New Order</a>
+    <!-- Add button -->
+    <div sec:authorize="hasRole('CLIENT')" class="mt-3 text-end">
+        <a th:href="@{/orders/add}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> <span th:text="#{orders.btn.new}">New Order</span>
+        </a>
     </div>
 
-    <!-- Language switch -->
-    <div class="mt-4">
-        <a th:href="@{/orders(lang='en')}">English</a> |
+    <!-- Language Switch -->
+    <div class="mt-5 text-center">
+        <a th:href="@{/orders(lang='en')}" class="me-2">🌍 English</a>
         <a th:href="@{/orders(lang='uk')}">Українська</a>
     </div>
 </main>
 
-<footer>
-    <div th:insert="~{footer::footer}"></div>
-</footer>
+<footer th:insert="~{footer::footer}"></footer>
 </body>
 </html>
