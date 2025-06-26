@@ -47,4 +47,7 @@ public class Appliance {
     @NotNull(message = "{appliance.price.notnull}")
     @DecimalMin(value = "0.0", inclusive = false, message = "{appliance.price.min}")
     private BigDecimal price;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductType type;
 }

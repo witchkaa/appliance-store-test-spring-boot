@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers("/orders/approve/**", "/orders/unapproved/**").hasRole("EMPLOYEE")
                         .requestMatchers("/orders/edit/**", "/orders/delete/**", "/orders/add/**", "/orders/add-order/**").hasRole("CLIENT")
                         .requestMatchers("/orders/**").hasAnyRole("EMPLOYEE", "CLIENT")
+                        .requestMatchers("/catalog").hasRole("CLIENT")
+                        .requestMatchers("/catalog/**").hasRole("CLIENT")
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())

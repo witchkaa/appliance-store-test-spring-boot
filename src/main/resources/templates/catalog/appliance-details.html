@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${appliance.name} + ' — Details'">Appliance Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .product-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        .product-title {
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="product-card mx-auto" style="max-width: 720px;">
+        <h2 class="product-title mb-4" th:text="${appliance.name}">Product Name</h2>
+
+        <div class="row mb-2">
+            <div class="col-sm-5 text-secondary">Model:</div>
+            <div class="col-sm-7 fw-medium" th:text="${appliance.model}">Model XYZ</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-sm-5 text-secondary">Category:</div>
+            <div class="col-sm-7 fw-medium" th:text="${appliance.category}">Category</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-sm-5 text-secondary">Manufacturer:</div>
+            <div class="col-sm-7 fw-medium" th:text="${appliance.manufacturer.name}">Manufacturer</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-sm-5 text-secondary">Power Type:</div>
+            <div class="col-sm-7 fw-medium" th:text="${appliance.powerType}">Electric</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-sm-5 text-secondary">Power:</div>
+            <div class="col-sm-7 fw-medium">
+                <span th:text="${appliance.power}">800</span> W
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-sm-5 text-secondary">Price:</div>
+            <div class="col-sm-7 fw-bold text-success">
+                $<span th:text="${appliance.price}">299.99</span>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-sm-5 text-secondary">Description:</div>
+            <div class="col-sm-7" th:text="${appliance.description}">A great appliance for daily use.</div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-sm-5 text-secondary">Characteristics:</div>
+            <div class="col-sm-7" th:text="${appliance.characteristic}">Color: White, Weight: 3kg</div>
+        </div>
+
+        <form method="post" th:action="@{/cart/add}">
+            <input type="hidden" name="applianceId" th:value="${appliance.id}" />
+            <button type="submit" class="btn btn-primary w-100 mb-3">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+            </button>
+        </form>
+
+        <a href="/catalog" class="btn btn-outline-secondary w-100">
+            <i class="bi bi-arrow-left-circle"></i> Back to Catalog
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

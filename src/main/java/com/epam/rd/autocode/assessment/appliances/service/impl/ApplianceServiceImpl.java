@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
+import com.epam.rd.autocode.assessment.appliances.model.ProductType;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +41,10 @@ public class ApplianceServiceImpl implements ApplianceService {
     public Optional<Appliance> findById(Long id) {
         log.debug("Finding appliance by id: {}", id);
         return applianceRepository.findById(id);
+    }
+    @Override
+    public Page<Appliance> getByType(ProductType type, Pageable pageable) {
+        log.debug("Fetching appliances by type {} with pageable {}", type, pageable);
+        return applianceRepository.findByType(type, pageable);
     }
 }

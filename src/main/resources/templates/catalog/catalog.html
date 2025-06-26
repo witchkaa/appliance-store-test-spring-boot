@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f9fafb;
+        }
+        .card {
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#" th:text="#{index.welcome}">Welcome</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/orders}" th:text="#{menu.orders}">Orders</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/catalog}" th:text="#{menu.catalog}">Catalog</a>
+                </li>
+
+
+                <!-- Logout -->
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/logout}" th:text="#{menu.logout}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container py-5">
+    <h2 class="mb-4 text-primary"><i class="bi bi-grid"></i> Catalog</h2>
+
+    <!-- Форма фильтрации -->
+    <form method="get" class="mb-4" id="filterForm">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <select name="type" class="form-select" id="typeSelect">
+                    <option value="" th:selected="${selectedType == null}">All Types</option>
+                    <option th:each="t : ${types}" th:value="${t}" th:text="${t}" th:selected="${t == selectedType}"></option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="sort" class="form-select" id="sortSelect">
+                    <option value="price" th:selected="${sort == 'price'}">Sort by price</option>
+                    <option value="name" th:selected="${sort == 'name'}">Sort by name</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="dir" class="form-select" id="dirSelect">
+                    <option value="asc" th:selected="${dir == 'asc'}">Ascending</option>
+                    <option value="desc" th:selected="${dir == 'desc'}">Descending</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Apply</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Карточки -->
+    <div class="row row-cols-1 row-cols-md-3 g-4" id="appliance-container" th:fragment="applianceCards">
+        <div class="col" th:each="appliance : ${appliances}">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary" th:text="${appliance.name}">Name</h5>
+                    <p class="card-text mb-1"><strong>Model:</strong> <span th:text="${appliance.model}">Model</span></p>
+                    <p class="card-text mb-1"><strong>Price:</strong> $<span th:text="${appliance.price}">Price</span></p>
+                    <p class="card-text mb-2"><strong>Type:</strong> <span th:text="${appliance.type}">Type</span></p>
+                    <a th:href="@{/catalog/appliances/{id}(id=${appliance.id})}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-eye"></i> View details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка загрузки -->
+    <div class="text-center mt-5">
+        <button id="loadMoreBtn" class="btn btn-secondary px-5 py-2">
+            <i class="bi bi-plus-circle"></i> Load more
+        </button>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let page = 1;
+
+    document.getElementById('loadMoreBtn').addEventListener('click', function () {
+        const type = document.getElementById('typeSelect').value;
+        const sort = document.getElementById('sortSelect').value;
+        const dir = document.getElementById('dirSelect').value;
+
+        fetch(`/catalog/load?page=${page}&type=${type}&sort=${sort}&dir=${dir}`)
+            .then(response => response.text())
+            .then(html => {
+                if (html.trim().length === 0) {
+                    document.getElementById('loadMoreBtn').disabled = true;
+                    document.getElementById('loadMoreBtn').innerText = "No more products";
+                    return;
+                }
+
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+
+                const newCards = temp.querySelectorAll('.col');
+                newCards.forEach(card => {
+                    document.getElementById('appliance-container').appendChild(card);
+                });
+
+                page++;
+            });
+    });
+</script>
+</body>
+</html>

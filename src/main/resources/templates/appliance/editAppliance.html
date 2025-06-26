@@ -50,6 +50,10 @@
         <input type="number" step="0.01" th:field="*{price}" />
         <div th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger"></div>
     </div>
-
+    <div>
+        <label th:text="#{object.appliance.type}"></label>
+        <input type="number" step="0.01" th:field="*{type}" />
+        <div th:if="${#fields.hasErrors('type')}" th:errors="*{type}" class="text-danger"></div>
+    </div>
     <button type="submit" class="btn btn-success" th:text="#{btn.submit}">Submit</button>
 </form>
