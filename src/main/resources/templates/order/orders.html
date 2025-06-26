@@ -3,17 +3,19 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
+    <title th:text="#{orders.header.list}">Orders list</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
-    <title>Orders list</title>
 </head>
 <body>
 <header>
     <div th:insert="~{menunavy::navy}"></div>
 </header>
+
 <main class="container mt-4">
     <h1 th:text="#{orders.header.list}">Orders list</h1>
+
     <table class="table table-hover">
         <thead class="table-dark">
         <tr>
@@ -26,7 +28,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="order : ${orders}">
+        <tr th:each="order : ${orders.content}">
             <td th:text="${order.id}"></td>
             <td th:text="${order.client != null} ? ${order.client.name} : '—'"></td>
             <td th:text="${order.employee != null} ? ${order.employee.name} : '—'"></td>
@@ -52,7 +54,7 @@
                     </div>
                 </div>
             </td>
-            <td th:text="${order.getAmount()}"></td>
+            <td th:text="${order.amount}"></td>
             <td>
                 <div sec:authorize="hasRole('CLIENT')">
                     <a th:href="@{/orders/edit/{id}(id=${order.id})}" title="Edit"><i class="fa fa-edit"></i></a>
@@ -66,14 +68,43 @@
         </tbody>
     </table>
 
-    <div sec:authorize="hasRole('CLIENT')">
+    <!-- Pagination controls -->
+    <nav th:if="${orders.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/orders(page=${orders.number - 1})}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}"
+                th:classappend="${orders.number == i} ? 'active'">
+                <a class="page-link" th:href="@{/orders(page=${i})}" th:text="${i + 1}">1</a>
+            </li>
+
+            <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/orders(page=${orders.number + 1})}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Add order button -->
+    <div sec:authorize="hasRole('CLIENT')" class="mt-3">
         <a th:href="@{/orders/add}" class="btn btn-primary" th:text="#{orders.btn.new}">New Order</a>
     </div>
+
+    <!-- Language switch -->
+    <div class="mt-4">
+        <a th:href="@{/orders(lang='en')}">English</a> |
+        <a th:href="@{/orders(lang='uk')}">Українська</a>
+    </div>
 </main>
-<p>
-    <a th:href="@{/orders(lang='en')}">English</a>
-    <a th:href="@{/orders(lang='uk')}">Українська</a>
-</p>
-<div th:insert="~{footer::footer}"></div>
+
+<footer>
+    <div th:insert="~{footer::footer}"></div>
+</footer>
 </body>
 </html>

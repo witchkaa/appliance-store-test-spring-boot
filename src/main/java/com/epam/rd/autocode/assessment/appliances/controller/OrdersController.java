@@ -8,6 +8,9 @@ import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,9 +30,12 @@ public class OrdersController {
     private final EmployeeService employeeService;
 
     @GetMapping
-    public String list(Model model) {
-        log.info("Getting list of all orders");
-        model.addAttribute("orders", ordersService.getAll());
+    public String list(@PageableDefault(size = 5, sort = "id") Pageable pageable,
+                       Model model) {
+        log.info("Getting paginated order list");
+        Page<Orders> ordersPage = ordersService.getAllPageable(pageable);
+        model.addAttribute("orders", ordersPage.getContent());
+        model.addAttribute("page", ordersPage);
         return "order/orders";
     }
 
@@ -59,10 +65,8 @@ public class OrdersController {
             return "order/newOrder";
         }
 
-        // Создаём заказ и добавляем товары с количествами
         ordersService.createOrderWithItems(applianceIds, quantities);
 
-        // После успешного создания — редирект на список заказов
         return "redirect:/orders";
     }
 

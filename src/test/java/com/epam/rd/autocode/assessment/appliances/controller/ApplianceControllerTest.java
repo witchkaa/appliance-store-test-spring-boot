@@ -1,0 +1,150 @@
+package com.epam.rd.autocode.assessment.appliances.controller;
+
+import com.epam.rd.autocode.assessment.appliances.model.*;
+import com.epam.rd.autocode.assessment.appliances.service.*;
+import org.junit.jupiter.api.Test;
+
+
+import org.junit.jupiter.api.Assertions;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.server.ResponseStatusException;
+
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+
+@ExtendWith(MockitoExtension.class)
+class ApplianceControllerTest {
+
+    @Mock
+    private ApplianceService applianceService;
+
+    @Mock
+    private ManufacturerService manufacturerService;
+
+    @InjectMocks
+    private ApplianceController applianceController;
+
+    @Mock
+    private Model model;
+
+    @Mock
+    private BindingResult bindingResult;
+
+    @Test
+    void list_shouldAddAppliancesToModelAndReturnView() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Appliance> page = new PageImpl<>(List.of(new Appliance()));
+        Mockito.when(applianceService.getAll(pageable)).thenReturn(page);
+
+        String view = applianceController.list(pageable, model);
+
+        Mockito.verify(model).addAttribute("appliances", page);
+        Assertions.assertEquals("appliance/appliances", view);
+    }
+
+    @Test
+    void createForm_shouldAddAttributesAndReturnView() {
+        List<Manufacturer> manufacturers = List.of(new Manufacturer());
+        Mockito.when(manufacturerService.getAll()).thenReturn(manufacturers);
+
+        String view = applianceController.createForm(model);
+
+        Mockito.verify(model).addAttribute(eq("appliance"), any(Appliance.class));
+        Mockito.verify(model).addAttribute("manufacturers", manufacturers);
+        Mockito.verify(model).addAttribute("categories", Category.values());
+        Mockito.verify(model).addAttribute("powerTypes", PowerType.values());
+        Assertions.assertEquals("appliance/newAppliance", view);
+    }
+
+    @Test
+    void save_withValidationErrors_shouldReturnFormViewWithAttributes() {
+        Appliance appliance = new Appliance();
+        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
+        List<Manufacturer> manufacturers = List.of(new Manufacturer());
+        Mockito.when(manufacturerService.getAll()).thenReturn(manufacturers);
+
+        String view = applianceController.save(appliance, bindingResult, model);
+
+        Mockito.verify(model).addAttribute("manufacturers", manufacturers);
+        Mockito.verify(model).addAttribute("categories", Category.values());
+        Mockito.verify(model).addAttribute("powerTypes", PowerType.values());
+        Assertions.assertEquals("appliance/newAppliance", view);
+    }
+
+    @Test
+    void save_withoutValidationErrors_shouldSaveAndRedirect() {
+        Appliance appliance = new Appliance();
+        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
+
+        String view = applianceController.save(appliance, bindingResult, model);
+
+        Mockito.verify(applianceService).save(appliance);
+        Assertions.assertEquals("redirect:/appliances", view);
+    }
+
+    @Test
+    void delete_shouldCallServiceAndRedirect() {
+        Long id = 1L;
+
+        String view = applianceController.delete(id);
+
+        Mockito.verify(applianceService).delete(id);
+        Assertions.assertEquals("redirect:/appliances", view);
+    }
+
+    @Test
+    void editForm_whenApplianceFound_shouldAddAttributesAndReturnView() {
+        Long id = 1L;
+        Appliance appliance = new Appliance();
+        List<Manufacturer> manufacturers = List.of(new Manufacturer());
+        Mockito.when(applianceService.findById(id)).thenReturn(Optional.of(appliance));
+        Mockito.when(manufacturerService.getAll()).thenReturn(manufacturers);
+
+        String view = applianceController.editForm(id, model);
+
+        Mockito.verify(model).addAttribute("appliance", appliance);
+        Mockito.verify(model).addAttribute("manufacturers", manufacturers);
+        Mockito.verify(model).addAttribute("categories", Category.values());
+        Mockito.verify(model).addAttribute("powerTypes", PowerType.values());
+        Assertions.assertEquals("appliance/editAppliance", view);
+    }
+
+    @Test
+    void editForm_whenApplianceNotFound_shouldThrowException() {
+        Long id = 1L;
+        Mockito.when(applianceService.findById(id)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(ResponseStatusException.class, () -> applianceController.editForm(id, model));
+    }
+
+    @Test
+    void updateAppliance_withValidationErrors_shouldReturnFormViewWithAttributes() {
+        Appliance appliance = new Appliance();
+        Long id = 1L;
+        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
+        List<Manufacturer> manufacturers = List.of(new Manufacturer());
+        Mockito.when(manufacturerService.getAll()).thenReturn(manufacturers);
+
+        String view = applianceController.updateAppliance(id, appliance, bindingResult, model);
+
+        Mockito.verify(model).addAttribute("manufacturers", manufacturers);
+        Mockito.verify(model).addAttribute("categories", Category.values());
+        Mockito.verify(model).addAttribute("powerTypes", PowerType.values());
+        Assertions.assertEquals("appliance/editAppliance", view);
+    }
+}

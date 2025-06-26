@@ -6,6 +6,8 @@ import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,6 +29,18 @@ public class OrderServiceImpl implements OrderService {
     private final EmployeeRepository employeeRepository;
 
     @Override
+    public Page<Orders> getAllPageable(Pageable pageable) {
+        log.debug("Fetching orders with pageable: {}", pageable);
+
+        if (isEmployee()) {
+            return ordersRepository.findAll(pageable);
+        } else if (isClient()) {
+            return ordersRepository.findByClient_Email(getCurrentUsername(), pageable);
+        }
+
+        return Page.empty();
+    }
+    @Override
     public List<Orders> getAll() {
         log.debug("Fetching orders");
         if (isEmployee()) {
@@ -36,7 +50,6 @@ public class OrderServiceImpl implements OrderService {
         }
         return Collections.emptyList();
     }
-
     @Override
     public List<Orders> getByClientId(Long clientId) {
         log.debug("Fetching orders for client id {}", clientId);
