@@ -47,5 +47,9 @@
 </table>
 <a th:href="@{clients/add}" class="btn btn-primary" th:text="#{client.btn.new}">New client</a>
 <div th:insert="~{footer::footer}"></div>
+<p>
+    <a th:href="@{/clients(lang='en')}">English</a>
+    <a th:href="@{/clients(lang='uk')}">Українська</a>
+</p>
 </body>
 </html>

@@ -70,6 +70,10 @@
         <a th:href="@{/orders/add}" class="btn btn-primary" th:text="#{orders.btn.new}">New Order</a>
     </div>
 </main>
+<p>
+    <a th:href="@{/orders(lang='en')}">English</a>
+    <a th:href="@{/orders(lang='uk')}">Українська</a>
+</p>
 <div th:insert="~{footer::footer}"></div>
 </body>
 </html>

@@ -38,5 +38,9 @@
 </table>
 <a th:href="@{/employees/add}" class="btn btn-primary" th:text="#{employee.btn.new}">New employee</a>
 <div th:insert="~{footer::footer}"></div>
+<p>
+    <a th:href="@{/employees(lang='en')}">English</a>
+    <a th:href="@{/employees(lang='uk')}">Українська</a>
+</p>
 </body>
 </html>
