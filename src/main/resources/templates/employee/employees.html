@@ -29,7 +29,11 @@
         <td th:text="${employee.password}"></td>
         <td th:text="${employee.department}"></td>
         <td>
-            <a th:href="@{/employees/{id}/delete(id=${employee.id})}">
+            <a th:href="@{/employees/{id}/edit(id=${employee.id})}" class="btn btn-sm btn-warning" title="Edit">
+                <i class="fa fa-edit"></i>
+            </a>
+            <a th:href="@{/employees/{id}/delete(id=${employee.id})}" class="btn btn-sm btn-danger" title="Delete"
+               onclick="return confirm('Are you sure you want to delete this employee?');">
                 <i class="fa fa-minus"></i>
             </a>
         </td>

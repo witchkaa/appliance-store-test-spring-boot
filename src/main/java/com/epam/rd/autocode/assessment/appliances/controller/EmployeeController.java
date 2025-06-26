@@ -49,4 +49,31 @@ public class EmployeeController {
         employeeService.delete(id);
         return "redirect:/employees";
     }
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model) {
+        Employee employee = employeeService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
+        model.addAttribute("employee", employee);
+        return "employee/editEmployee";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String update(@PathVariable Long id,
+                         @Valid @ModelAttribute Employee employee,
+                         BindingResult result) {
+        if (result.hasErrors()) {
+            return "employee/editEmployee";
+        }
+
+        Employee existing = employeeService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
+
+        if (employee.getPassword() == null || employee.getPassword().isBlank()) {
+            employee.setPassword(existing.getPassword());
+        }
+
+        employee.setId(id);
+        employeeService.save(employee);
+        return "redirect:/employees";
+    }
 }
