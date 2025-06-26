@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,13 +25,8 @@ public class Orders {
     @NotNull(message = "{orders.client.notnull}")
     private Client client;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany
     private Set<OrderRow> orderRowSet = new HashSet<>();
 
     private Boolean approved;
-    public BigDecimal getAmount() {
-        return orderRowSet.stream()
-                .map(row -> row.getAmount())  // assuming getAmount() returns BigDecimal
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }

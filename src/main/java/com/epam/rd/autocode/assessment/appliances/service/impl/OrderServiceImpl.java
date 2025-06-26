@@ -138,7 +138,122 @@ public class OrderServiceImpl implements OrderService {
         log.debug("Getting order rows for order id {}", orderId);
         Orders order = getById(orderId);
         checkAccess(order);
-        return orderRowRepository.findByOrder_Id(orderId);
+        return new List<OrderRow>() {
+            @Override
+            public int size() {
+                return 0;
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return false;
+            }
+
+            @Override
+            public boolean contains(Object o) {
+                return false;
+            }
+
+            @Override
+            public Iterator<OrderRow> iterator() {
+                return null;
+            }
+
+            @Override
+            public Object[] toArray() {
+                return new Object[0];
+            }
+
+            @Override
+            public <T> T[] toArray(T[] a) {
+                return null;
+            }
+
+            @Override
+            public boolean add(OrderRow orderRow) {
+                return false;
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                return false;
+            }
+
+            @Override
+            public boolean containsAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public boolean addAll(Collection<? extends OrderRow> c) {
+                return false;
+            }
+
+            @Override
+            public boolean addAll(int index, Collection<? extends OrderRow> c) {
+                return false;
+            }
+
+            @Override
+            public boolean removeAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public boolean retainAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public void clear() {
+
+            }
+
+            @Override
+            public OrderRow get(int index) {
+                return null;
+            }
+
+            @Override
+            public OrderRow set(int index, OrderRow element) {
+                return null;
+            }
+
+            @Override
+            public void add(int index, OrderRow element) {
+
+            }
+
+            @Override
+            public OrderRow remove(int index) {
+                return null;
+            }
+
+            @Override
+            public int indexOf(Object o) {
+                return 0;
+            }
+
+            @Override
+            public int lastIndexOf(Object o) {
+                return 0;
+            }
+
+            @Override
+            public ListIterator<OrderRow> listIterator() {
+                return null;
+            }
+
+            @Override
+            public ListIterator<OrderRow> listIterator(int index) {
+                return null;
+            }
+
+            @Override
+            public List<OrderRow> subList(int fromIndex, int toIndex) {
+                return List.of();
+            }
+        };
     }
 
     @Override
@@ -159,10 +274,8 @@ public class OrderServiceImpl implements OrderService {
                 });
 
         OrderRow row = new OrderRow();
-        row.setOrder(order);
         row.setAppliance(appliance);
         row.setNumber((long) numbers);
-        row.setAmount(price.multiply(BigDecimal.valueOf(numbers)));
 
         orderRowRepository.save(row);
         log.info("Appliance {} added to order {}", applianceId, orderId);
@@ -193,10 +306,8 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> new EntityNotFoundException("Appliance not found"));
 
             OrderRow row = new OrderRow();
-            row.setOrder(order);
             row.setAppliance(appliance);
             row.setNumber(quantities.get(i).longValue());
-            row.setAmount(appliance.getPrice().multiply(BigDecimal.valueOf(quantities.get(i))));
 
             orderRows.add(row);
         }
@@ -238,10 +349,8 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> new EntityNotFoundException("Appliance not found: " + applianceId));
 
             OrderRow row = new OrderRow();
-            row.setOrder(order);
             row.setAppliance(appliance);
             row.setNumber(qty.longValue());
-            row.setAmount(appliance.getPrice().multiply(BigDecimal.valueOf(qty)));
 
             orderRowRepository.save(row);
         }

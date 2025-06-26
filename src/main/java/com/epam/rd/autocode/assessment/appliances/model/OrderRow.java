@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,9 +14,14 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class OrderRow {
 
+
+    public OrderRow(Long id, BigDecimal amount, Long order, Appliance appliance) {
+        this.id = id;
+        this.amount=amount;
+        this.appliance = appliance;
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,15 +30,9 @@ public class OrderRow {
     @NotNull(message = "{orderRow.appliance.notnull}")
     private Appliance appliance;
 
-    @ManyToOne
-    @NotNull(message = "{orderRow.order.notnull}")
-    private Orders order;
+    private BigDecimal amount;
 
     @NotNull(message = "{orderRow.number.notnull}")
     @Min(value = 1, message = "{orderRow.number.min}")
     private Long number;
-
-    @NotNull(message = "{orderRow.amount.notnull}")
-    @DecimalMin(value = "0.01", message = "{orderRow.amount.min}")
-    private BigDecimal amount;
 }
