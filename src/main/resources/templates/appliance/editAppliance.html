@@ -1,0 +1,55 @@
+<form th:action="@{/appliances/{id}/edit(id=${appliance.id})}" th:object="${appliance}" method="post">
+    <div>
+        <label th:text="#{object.appliance.name}"></label>
+        <input type="text" th:field="*{name}" />
+        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></div>
+    </div>
+    <div>
+        <label th:text="#{object.appliance.category}"></label>
+        <select th:field="*{category}">
+            <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"></option>
+        </select>
+        <div th:if="${#fields.hasErrors('category')}" th:errors="*{category}" class="text-danger"></div>
+    </div>
+    <div>
+        <label th:text="#{object.appliance.model}"></label>
+        <input type="text" th:field="*{model}" />
+        <div th:if="${#fields.hasErrors('model')}" th:errors="*{model}" class="text-danger"></div>
+    </div>
+    <div>
+        <label th:text="#{object.appliance.manufacturer}"></label>
+        <select th:field="*{manufacturer}">
+            <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.name}"></option>
+        </select>
+        <div th:if="${#fields.hasErrors('manufacturer')}" th:errors="*{manufacturer}" class="text-danger"></div>
+    </div>
+    <div>
+        <label th:text="#{object.appliance.powerType}"></label>
+        <select th:field="*{powerType}">
+            <option th:each="p : ${powerTypes}" th:value="${p}" th:text="${p}"></option>
+        </select>
+        <div th:if="${#fields.hasErrors('powerType')}" th:errors="*{powerType}" class="text-danger"></div>
+    </div>
+    <div>
+        <label th:text="#{object.appliance.characteristic}"></label>
+        <input type="text" th:field="*{characteristic}" />
+        <div th:if="${#fields.hasErrors('characteristic')}" th:errors="*{characteristic}" class="text-danger"></div>
+    </div>
+    <div>
+        <label th:text="#{object.appliance.description}"></label>
+        <input type="text" th:field="*{description}" />
+        <div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger"></div>
+    </div>
+    <div>
+        <label th:text="#{object.appliance.power}"></label>
+        <input type="number" th:field="*{power}" />
+        <div th:if="${#fields.hasErrors('power')}" th:errors="*{power}" class="text-danger"></div>
+    </div>
+    <div>
+        <label th:text="#{object.appliance.price}"></label>
+        <input type="number" step="0.01" th:field="*{price}" />
+        <div th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger"></div>
+    </div>
+
+    <button type="submit" class="btn btn-success" th:text="#{btn.submit}">Submit</button>
+</form>

@@ -39,9 +39,9 @@
         <td th:text="${appliance.power}"></td>
         <td th:text="${appliance.price}"></td>
         <td>
-            <a th:href="@{/appliances/{id}/delete(id=${appliance.id})}">
-                <i class="fa fa-minus"></i>
-            </a>
+            <a th:href="@{/appliances/{id}/edit(id=${appliance.id})}" class="btn btn-sm btn-warning">Edit</a>
+            <a th:href="@{/appliances/{id}/delete(id=${appliance.id})}" class="btn btn-sm btn-danger"
+               onclick="return confirm('Are you sure?')">Delete</a>
         </td>
     </tr>
     </tbody>

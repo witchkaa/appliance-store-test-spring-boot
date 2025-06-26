@@ -10,10 +10,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -59,6 +63,34 @@ public class ApplianceController {
     public String delete(@PathVariable Long id) {
         log.info("Deleting appliance with id: {}", id);
         applianceService.delete(id);
+        return "redirect:/appliances";
+    }
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model) {
+        log.info("Opening form to edit appliance with id: {}", id);
+        Appliance appliance = applianceService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appliance not found"));
+        model.addAttribute("appliance", appliance);
+        model.addAttribute("manufacturers", manufacturerService.getAll());
+        model.addAttribute("categories", Category.values());
+        model.addAttribute("powerTypes", PowerType.values());
+        return "appliance/editAppliance";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String updateAppliance(@PathVariable Long id,
+                                  @ModelAttribute @Valid Appliance appliance,
+                                  BindingResult result,
+                                  Model model) {
+        if (result.hasErrors()) {
+            log.warn("Validation errors while editing appliance: {}", result.getAllErrors());
+            model.addAttribute("manufacturers", manufacturerService.getAll());
+            model.addAttribute("categories", Category.values());
+            model.addAttribute("powerTypes", PowerType.values());
+            return "appliance/editAppliance";
+        }
+        appliance.setId(id);
+        applianceService.save(appliance);
         return "redirect:/appliances";
     }
 }
