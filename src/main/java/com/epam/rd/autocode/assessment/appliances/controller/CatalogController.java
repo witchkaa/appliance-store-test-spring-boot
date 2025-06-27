@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.controller;
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
 import com.epam.rd.autocode.assessment.appliances.model.ProductType;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,7 +56,7 @@ public class CatalogController {
         return "catalog/catalog";
     }
     @GetMapping("/appliances/{id}")
-    public String viewAppliance(@PathVariable Long id, Model model) {
+    public String viewAppliance(@PathVariable Long id, Model model, HttpServletRequest request) {
         Optional<Appliance> applianceOptional = applianceService.findById(id);
         Appliance appliance = applianceOptional.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         model.addAttribute("appliance", appliance);

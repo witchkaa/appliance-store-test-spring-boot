@@ -24,6 +24,9 @@
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/orders}" th:text="#{order.menu.name}"></a>
                     </li>
+                    <li class="nav-item" sec:authorize="hasRole('CLIENT')">
+                        <a class="nav-link" th:href="@{/cart}" th:text="#{menu.cart}"></a>
+                    </li>
                 </ul>
             </div>
         </div>

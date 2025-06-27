@@ -45,6 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/orders/**").hasAnyRole("EMPLOYEE", "CLIENT")
                         .requestMatchers("/catalog").hasRole("CLIENT")
                         .requestMatchers("/catalog/**").hasRole("CLIENT")
+                        .requestMatchers("/cart").hasRole("CLIENT")
+                        .requestMatchers("/cart/**").hasRole("CLIENT")
                         .anyRequest().authenticated()
                 )
                 .formLogin(Customizer.withDefaults())
@@ -60,5 +62,17 @@ public class SecurityConfig {
                 .passwordEncoder(passwordEncoder());
 
         return authBuilder.build();
+    }
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable() // отключаем CSRF защиту
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .permitAll()
+                .and()
+                .logout()
+                .permitAll();
     }
 }

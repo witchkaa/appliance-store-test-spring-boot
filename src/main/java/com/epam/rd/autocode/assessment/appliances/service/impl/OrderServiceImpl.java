@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -245,5 +246,29 @@ public class OrderServiceImpl implements OrderService {
 
             orderRowRepository.save(row);
         }
+    }
+    @Override
+    @Transactional
+    public Orders createOrderFromCart(List<CartItem> items, Client client) {
+        Orders order = new Orders();
+        order.setClient(client);
+
+        Set<OrderRow> rows = new HashSet<>();
+        int lineNumber = 1;
+
+        for (CartItem item : items) {
+            OrderRow row = new OrderRow();
+            row.setAppliance(item.getAppliance());
+            row.setOrder(order);
+            row.setAmount(item.getAppliance().getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))); // 💥 вот это обязательно
+            row.setNumber((long) lineNumber++);
+
+
+            rows.add(row);
+        }
+
+        order.setOrderRowSet(rows);
+
+        return ordersRepository.save(order);
     }
 }

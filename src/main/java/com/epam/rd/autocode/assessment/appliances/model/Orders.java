@@ -30,9 +30,6 @@ public class Orders {
     private Set<OrderRow> orderRowSet = new HashSet<>();
 
     private Boolean approved;
-    public BigDecimal getAmount() {
-        return orderRowSet.stream()
-                .map(row -> row.getAmount())  // assuming getAmount() returns BigDecimal
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
+
+    private BigDecimal amount;
 }

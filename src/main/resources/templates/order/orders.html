@@ -21,7 +21,6 @@
                 <th th:text="#{orders.field.client}">Client</th>
                 <th th:text="#{orders.field.employee}">Employee</th>
                 <th th:text="#{orders.field.approved}">Approved</th>
-                <th th:text="#{orders.field.amount}">Amount</th>
                 <th>Operation</th>
             </tr>
             </thead>
@@ -52,7 +51,6 @@
                         </div>
                     </div>
                 </td>
-                <td th:text="${order.amount} + ' $'"></td>
                 <td>
                     <div sec:authorize="hasRole('CLIENT')">
                         <a th:href="@{/orders/edit/{id}(id=${order.id})}" title="Edit" class="me-2">

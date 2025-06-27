@@ -21,6 +21,7 @@
                 <!-- Только для клиента -->
                 <li class="nav-item" sec:authorize="hasRole('CLIENT')">
                     <a class="nav-link" th:href="@{/catalog}" th:text="#{menu.catalog}">Catalog</a>
+                    <a class="nav-link" th:href="@{/cart}" th:text="#{menu.cart}">Cart</a>
                 </li>
 
                 <!-- Только для сотрудников -->
