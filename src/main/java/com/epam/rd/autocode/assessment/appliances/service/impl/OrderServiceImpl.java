@@ -7,6 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -211,7 +212,7 @@ public class OrderServiceImpl implements OrderService {
         return clientRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Client not found with email: " + email));
     }
-    private boolean isEmployee() {
+    public boolean isEmployee() {
         return SecurityContextHolder.getContext().getAuthentication()
                 .getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
@@ -270,5 +271,18 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderRowSet(rows);
 
         return ordersRepository.save(order);
+    }
+    public Page<Orders> searchOrders(Long id, String clientName, Pageable pageable) {
+        if (id != null) {
+            return ordersRepository.findById(id)
+                    .map(order -> new PageImpl<>(List.of(order), pageable, 1))
+                    .orElseGet(() -> new PageImpl<>(List.of(), pageable, 0));
+        }
+
+        if (clientName != null && !clientName.isBlank()) {
+            return ordersRepository.findByClientNameContainingIgnoreCase(clientName, pageable);
+        }
+
+        return ordersRepository.findAll(pageable);
     }
 }

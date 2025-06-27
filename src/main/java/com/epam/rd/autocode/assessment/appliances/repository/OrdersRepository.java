@@ -13,4 +13,5 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     List<Orders> findByClient_Id(Long clientId);
     List<Orders> findByClient_Email(String email);
     Page<Orders> findByClient_Email(String email, Pageable pageable);
+    Page<Orders> findByClientNameContainingIgnoreCase(String name, Pageable pageable);
 }

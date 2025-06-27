@@ -9,7 +9,24 @@
 </head>
 <body style="background-color: #f8f9fa">
 <header th:insert="~{menunavy::navy}"></header>
-
+<!-- Search block - only visible for EMPLOYEE -->
+<div sec:authorize="hasRole('EMPLOYEE')" class="mb-4">
+    <form class="row g-2" th:action="@{/orders}" method="get">
+        <div class="col-md-3">
+            <input type="text" name="id" class="form-control"
+                   th:placeholder="#{orders.search.id}" th:value="${param.id}">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="client" class="form-control"
+                   th:placeholder="#{orders.search.client}" th:value="${param.client}">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> <span th:text="#{orders.search.button}">Search</span>
+            </button>
+        </div>
+    </form>
+</div>
 <main class="container py-4">
     <h1 class="mb-4 text-primary" th:text="#{orders.header.list}">Orders List</h1>
 

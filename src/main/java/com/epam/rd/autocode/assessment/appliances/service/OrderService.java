@@ -21,4 +21,6 @@ public interface OrderService {
     void createOrderWithAppliances(OrderFormDto orderForm);
     void addApplianceToOrder(Long orderId, Long applianceId, int numbers, BigDecimal price);
     Orders createOrderFromCart(List<CartItem> cartItems, Client client);
+    Page<Orders> searchOrders(Long id, String clientName, Pageable pageable);
+    boolean isEmployee();
 }

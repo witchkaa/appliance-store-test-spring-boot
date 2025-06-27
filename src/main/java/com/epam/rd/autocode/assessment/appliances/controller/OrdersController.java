@@ -31,9 +31,26 @@ public class OrdersController {
     private final EmployeeService employeeService;
 
     @GetMapping
-    public String list(@PageableDefault(size = 5, sort = "id") Pageable pageable, Model model) {
-        log.info("Getting paginated order list");
-        Page<Orders> ordersPage = ordersService.getAllPageable(pageable);
+    public String list(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String client,
+            @PageableDefault(size = 5, sort = "id") Pageable pageable,
+            Model model) {
+
+        log.info("Fetching orders: id={}, client={}", id, client);
+
+        Page<Orders> ordersPage;
+
+        if (ordersService.isEmployee()) {
+            if (id != null || (client != null && !client.isBlank())) {
+                ordersPage = ordersService.searchOrders(id, client, pageable);
+            } else {
+                ordersPage = ordersService.getAllPageable(pageable);
+            }
+        } else {
+            ordersPage = ordersService.getAllPageable(pageable);
+        }
+
         model.addAttribute("orders", ordersPage);
         return "order/orders";
     }
