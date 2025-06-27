@@ -24,17 +24,20 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CustomUserDetailsService userDetailsService;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    private final CustomUserDetailsService userDetailsService;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/locale", "/login").permitAll()
                         .requestMatchers("/employees/**").hasRole("EMPLOYEE")
                         .requestMatchers("/clients/**").hasRole("EMPLOYEE")
                         .requestMatchers("/appliances/**").hasRole("EMPLOYEE")
@@ -43,36 +46,28 @@ public class SecurityConfig {
                         .requestMatchers("/orders/approve/**", "/orders/unapproved/**").hasRole("EMPLOYEE")
                         .requestMatchers("/orders/edit/**", "/orders/delete/**", "/orders/add/**", "/orders/add-order/**").hasRole("CLIENT")
                         .requestMatchers("/orders/**").hasAnyRole("EMPLOYEE", "CLIENT")
-                        .requestMatchers("/catalog").hasRole("CLIENT")
-                        .requestMatchers("/catalog/**").hasRole("CLIENT")
-                        .requestMatchers("/cart").hasRole("CLIENT")
-                        .requestMatchers("/cart/**").hasRole("CLIENT")
+                        .requestMatchers("/catalog", "/catalog/**").hasRole("CLIENT")
+                        .requestMatchers("/cart", "/cart/**").hasRole("CLIENT")
                         .anyRequest().authenticated()
                 )
-                .formLogin(Customizer.withDefaults())
-                .logout(Customizer.withDefaults());
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .permitAll()
+                );
 
         return http.build();
     }
+
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-
         authBuilder.userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
-
         return authBuilder.build();
-    }
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable() // отключаем CSRF защиту
-                .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .formLogin()
-                .permitAll()
-                .and()
-                .logout()
-                .permitAll();
     }
 }
