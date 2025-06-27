@@ -6,11 +6,20 @@
         <div class="card h-100 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title text-primary" th:text="${appliance.name}">Name</h5>
-                <p class="card-text mb-1"><strong>Model:</strong> <span th:text="${appliance.model}">Model</span></p>
-                <p class="card-text mb-1"><strong>Price:</strong> $<span th:text="${appliance.price}">Price</span></p>
-                <p class="card-text mb-2"><strong>Type:</strong> <span th:text="${appliance.type}">Type</span></p>
+                <p class="card-text mb-1">
+                    <strong th:text="#{catalog.model} + ':'">Model:</strong>
+                    <span th:text="${appliance.model}">Model</span>
+                </p>
+                <p class="card-text mb-1">
+                    <strong th:text="#{catalog.price} + ':'">Price:</strong>
+                    $<span th:text="${appliance.price}">Price</span>
+                </p>
+                <p class="card-text mb-2">
+                    <strong th:text="#{catalog.type} + ':'">Type:</strong>
+                    <span th:text="${appliance.type}">Type</span>
+                </p>
                 <a th:href="@{/catalog/appliances/{id}(id=${appliance.id})}" class="btn btn-outline-primary btn-sm w-100">
-                    <i class="bi bi-eye"></i> View details
+                    <i class="bi bi-eye"></i> <span th:text="#{catalog.viewDetails}">View details</span>
                 </a>
             </div>
         </div>
