@@ -8,10 +8,8 @@ import com.epam.rd.autocode.assessment.appliances.repository.CartItemRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
 import com.epam.rd.autocode.assessment.appliances.service.CartService;
-import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.criteria.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,7 +33,7 @@ public class CartServiceImpl implements CartService {
             throw new RuntimeException("User is not authenticated");
         }
 
-        String email = auth.getName(); // вернёт имя пользователя (например, email)
+        String email = auth.getName();
         return clientRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Client not found for email: " + email));
     }

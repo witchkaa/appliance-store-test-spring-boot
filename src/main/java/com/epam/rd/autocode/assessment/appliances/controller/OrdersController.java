@@ -1,12 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
-import com.epam.rd.autocode.assessment.appliances.model.OrderFormDto;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
-import com.epam.rd.autocode.assessment.appliances.service.ClientService;
-import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -14,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -27,8 +22,6 @@ import java.util.List;
 public class OrdersController {
 
     private final OrderService ordersService;
-    private final ClientService clientService;
-    private final EmployeeService employeeService;
 
     @GetMapping
     public String list(

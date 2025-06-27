@@ -11,6 +11,6 @@ public class IndexController {
     @GetMapping("/")
     public String index(Locale locale) {
         System.out.println(">> Current locale: " + locale);
-        return "index"; // resources/templates/index.html
+        return "index";
     }
 }
