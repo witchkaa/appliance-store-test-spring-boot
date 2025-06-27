@@ -14,4 +14,5 @@ public interface ApplianceService {
     void delete(Long id);
     Optional<Appliance> findById(Long id);
     Page<Appliance> getByType(ProductType type, Pageable pageable);
+    Page<Appliance> searchAppliances(Long id, String name, String manufacturer, Pageable pageable);
 }

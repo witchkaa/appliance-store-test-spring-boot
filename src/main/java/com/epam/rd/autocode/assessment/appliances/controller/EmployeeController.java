@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @Controller
 @RequestMapping("/employees")
@@ -19,9 +21,21 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping
-    public String list(Model model) {
-        log.info("Fetching list of employees");
-        model.addAttribute("employees", employeeService.getAll());
+    public String list(@RequestParam(required = false) Long id,
+                       @RequestParam(required = false) String name,
+                       @RequestParam(required = false) String department,
+                       @RequestParam(required = false, defaultValue = "id") String sortBy,
+                       Model model) {
+
+        log.info("Searching/sorting employees by id={}, name={}, department={}, sortBy={}", id, name, department, sortBy);
+        List<Employee> employees = employeeService.searchAndSort(id, name, department, sortBy);
+
+        model.addAttribute("employees", employees);
+        model.addAttribute("currentSort", sortBy);
+        model.addAttribute("searchId", id);
+        model.addAttribute("searchName", name);
+        model.addAttribute("searchDepartment", department);
+
         return "employee/employees";
     }
 

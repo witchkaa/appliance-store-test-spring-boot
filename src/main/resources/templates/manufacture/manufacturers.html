@@ -11,6 +11,21 @@
 <h1 th:text="#{manufacturer.header.list}">Manufacturer List</h1>
 <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+<form class="row g-2 mb-3" th:action="@{/manufacturers}" method="get">
+    <div class="col-md-2">
+        <input type="text" name="id" class="form-control" th:value="${paramId}"
+               th:placeholder="#{search.id}" />
+    </div>
+    <div class="col-md-6">
+        <input type="text" name="name" class="form-control" th:value="${paramName}"
+               th:placeholder="#{search.name}" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-search"></i> <span th:text="#{search.button}">Search</span>
+        </button>
+    </div>
+</form>
 <table class="table table-hover">
     <thead>
     <tr class="table-dark">

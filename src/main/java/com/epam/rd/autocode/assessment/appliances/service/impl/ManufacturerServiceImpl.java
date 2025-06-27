@@ -51,4 +51,18 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         log.debug("Finding manufacturer by id: {}", id);
         return manufacturerRepository.findById(id);
     }
+    @Override
+    public List<Manufacturer> search(Long id, String name) {
+        if (id != null) {
+            return manufacturerRepository.findById(id)
+                    .map(List::of)
+                    .orElse(List.of());
+        }
+
+        if (name != null && !name.isBlank()) {
+            return manufacturerRepository.findByNameContainingIgnoreCase(name);
+        }
+
+        return manufacturerRepository.findAll();
+    }
 }

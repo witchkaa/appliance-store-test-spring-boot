@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface ApplianceRepository extends JpaRepository<Appliance, Long> {
     Page<Appliance> findAll(Pageable pageable);
     Page<Appliance> findByType(ProductType type, Pageable pageable);
+    Page<Appliance> findByNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(String name, String manufacturer, Pageable pageable);
 }

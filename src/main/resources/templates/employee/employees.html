@@ -10,6 +10,29 @@
 <body>
 <div th:insert="~{menunavy::navy}"></div>
 <h1 th:text="#{employee.header.list}">Employees</h1>
+<form method="get" action="#" class="row g-2 mb-3">
+    <div class="col-md-2">
+        <input type="number" class="form-control" name="id" th:value="${searchId}" placeholder="ID">
+    </div>
+    <div class="col-md-3">
+        <input type="text" class="form-control" name="name" th:value="${searchName}" placeholder="Name">
+    </div>
+    <div class="col-md-3">
+        <input type="text" class="form-control" name="department" th:value="${searchDepartment}" placeholder="Department">
+    </div>
+    <div class="col-md-2">
+        <select name="sortBy" class="form-select">
+            <option value="id" th:selected="${currentSort == 'id'}" th:text="#{object.user.id}">ID</option>
+            <option value="name" th:selected="${currentSort == 'name'}" th:text="#{object.user.name}">Name</option>
+            <option value="department" th:selected="${currentSort == 'department'}" th:text="#{object.employee.department}">Department</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="fa fa-search"></i> <span th:text="#{btn.search}">Search</span>
+        </button>
+    </div>
+</form>
 <table class="table table-hover">
     <thead>
     <tr class="table-dark">

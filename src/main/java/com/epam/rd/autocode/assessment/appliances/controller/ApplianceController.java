@@ -8,6 +8,7 @@ import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -27,10 +28,22 @@ public class ApplianceController {
     private final ApplianceService applianceService;
     private final ManufacturerService manufacturerService;
 
+    private static final int PAGE_SIZE = 8;
+
     @GetMapping
-    public String list(@PageableDefault(size = 10) Pageable pageable, Model model) {
-        log.info("Listing appliances with pageable: {}", pageable);
-        model.addAttribute("appliances", applianceService.getAll(pageable));
+    public String list(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String manufacturer,
+            @PageableDefault(size = PAGE_SIZE) Pageable pageable,
+            Model model) {
+
+        log.info("Searching appliances by: id={}, name={}, manufacturer={}", id, name, manufacturer);
+        Page<Appliance> appliances = applianceService.searchAppliances(id, name, manufacturer, pageable);
+        model.addAttribute("appliances", appliances);
+        model.addAttribute("paramId", id);
+        model.addAttribute("paramName", name);
+        model.addAttribute("paramManufacturer", manufacturer);
         return "appliance/appliances";
     }
 

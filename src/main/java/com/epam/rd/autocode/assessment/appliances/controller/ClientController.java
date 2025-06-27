@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @Controller
 @RequestMapping("/clients")
@@ -19,9 +21,14 @@ public class ClientController {
     private final ClientService clientService;
 
     @GetMapping
-    public String list(Model model) {
-        log.info("Request to list all clients");
-        model.addAttribute("clients", clientService.getAll());
+    public String list(@RequestParam(required = false) Long id,
+                       @RequestParam(required = false) String name,
+                       Model model) {
+        log.info("Searching clients with id={} and name='{}'", id, name);
+        List<Client> clients = clientService.search(id, name);
+        model.addAttribute("clients", clients);
+        model.addAttribute("searchId", id);
+        model.addAttribute("searchName", name);
         return "client/clients";
     }
 

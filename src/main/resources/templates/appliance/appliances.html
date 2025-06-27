@@ -26,7 +26,22 @@
         </h2>
         <a th:href="@{/appliances/add}" class="btn btn-primary" th:text="#{appliance.btn.new}">New appliance</a>
     </div>
-
+    <form class="row g-2 mb-4" th:action="@{/appliances}" method="get">
+        <div class="col-md-2">
+            <input type="text" name="id" class="form-control" th:placeholder="#{search.id}" th:value="${paramId}">
+        </div>
+        <div class="col-md-4">
+            <input type="text" name="name" class="form-control" th:placeholder="#{search.name}" th:value="${paramName}">
+        </div>
+        <div class="col-md-4">
+            <input type="text" name="manufacturer" class="form-control" th:placeholder="#{search.manufacturer}" th:value="${paramManufacturer}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search"></i> <span th:text="#{search.button}">Search</span>
+            </button>
+        </div>
+    </form>
     <!-- Таблица в карточке -->
     <div class="card">
         <div class="card-body p-0">

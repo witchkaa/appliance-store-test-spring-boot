@@ -7,9 +7,11 @@ import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -46,5 +48,22 @@ public class ApplianceServiceImpl implements ApplianceService {
     public Page<Appliance> getByType(ProductType type, Pageable pageable) {
         log.debug("Fetching appliances by type {} with pageable {}", type, pageable);
         return applianceRepository.findByType(type, pageable);
+    }
+    @Override
+    public Page<Appliance> searchAppliances(Long id, String name, String manufacturer, Pageable pageable) {
+        if (id != null) {
+            return applianceRepository.findById(id)
+                    .map(appliance -> new PageImpl<>(List.of(appliance), pageable, 1))
+                    .orElseGet(() -> new PageImpl<>(List.of(), pageable, 0));
+        }
+        if ((name != null && !name.isBlank()) || (manufacturer != null && !manufacturer.isBlank())) {
+            return applianceRepository.findByNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
+                    name == null ? "" : name,
+                    manufacturer == null ? "" : manufacturer,
+                    pageable
+            );
+        }
+
+        return applianceRepository.findAll(pageable);
     }
 }

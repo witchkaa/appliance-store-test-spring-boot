@@ -14,6 +14,19 @@
 <body>
 <div th:insert="~{menunavy::navy}"></div>
 <h1 th:text="#{client.header.list}"></h1>
+<form method="get" action="#" class="row g-2 mb-3">
+    <div class="col-md-2">
+        <input type="number" name="id" class="form-control" th:value="${searchId}" placeholder="ID">
+    </div>
+    <div class="col-md-4">
+        <input type="text" name="name" class="form-control" th:value="${searchName}" placeholder="Name">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="fa fa-search"></i> <span th:text="#{btn.search}">Search</span>
+        </button>
+    </div>
+</form>
 <table class="table table-hover">
     <thead>
     <tr class="table-dark">

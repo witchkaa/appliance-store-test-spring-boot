@@ -10,4 +10,5 @@ public interface ManufacturerService {
     Manufacturer save(Manufacturer manufacturer);
     void delete(Long id);
     Optional<Manufacturer> findById(Long id);
+    List<Manufacturer> search(Long id, String name);
 }

@@ -5,6 +5,9 @@ import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,5 +39,19 @@ public class ClientServiceImpl implements ClientService {
     public Optional<Client> findById(Long id) {
         log.debug("Finding client by id: {}", id);
         return repository.findById(id);
+    }
+    @Override
+    public List<Client> search(Long id, String name) {
+        if (id != null) {
+            return repository.findById(id)
+                    .map(List::of)
+                    .orElseGet(List::of);
+        }
+
+        if (name != null && !name.isBlank()) {
+            return repository.findByNameContainingIgnoreCase(name);
+        }
+
+        return repository.findAll();
     }
 }

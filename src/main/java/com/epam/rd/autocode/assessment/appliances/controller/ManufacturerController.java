@@ -20,9 +20,13 @@ public class ManufacturerController {
     private final ManufacturerService manufacturerService;
 
     @GetMapping
-    public String list(Model model) {
-        log.info("Getting list of all manufacturers");
-        model.addAttribute("manufacturers", manufacturerService.getAll());
+    public String list(@RequestParam(required = false) Long id,
+                       @RequestParam(required = false) String name,
+                       Model model) {
+        log.info("Searching manufacturers by id={} and name={}", id, name);
+        model.addAttribute("manufacturers", manufacturerService.search(id, name));
+        model.addAttribute("paramId", id);
+        model.addAttribute("paramName", name);
         return "manufacture/manufacturers";
     }
 
