@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="details">
+    <h5>Order #<span th:text="${order.id}">ID</span></h5>
+    <p><strong>Client:</strong> <span th:text="${order.client != null ? order.client.name : '—'}"></span></p>
+    <p><strong>Employee:</strong> <span th:text="${order.employee != null ? order.employee.name : '—'}"></span></p>
+
+    <table class="table table-sm table-bordered">
+        <thead>
+        <tr>
+            <th th:text="#{orderrow.appliance}">Appliance</th>
+            <th th:text="#{orderrow.quantity}">Qty</th>
+            <th th:text="#{orderrow.price}">Price</th>
+            <th th:text="#{orderrow.amount}">Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${rows}">
+            <td th:text="${row.appliance != null ? row.appliance.name : '—'}"></td>
+            <td th:text="${row.number}"></td>
+            <td th:text="${#numbers.formatDecimal(row.amount, 1, 'COMMA', 2, 'POINT')} + ' ₴'"></td>
+            <td th:text="${#numbers.formatDecimal(row.amount * row.number, 1, 'COMMA', 2, 'POINT')} + ' ₴'"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr/>
+
+    <p><strong th:text="#{orders.field.amount} + ':'"></strong>
+        <span th:text="${amount != null ? amount + ' ₴' : '—'}"></span>
+    </p>
+</div>
+</body>
+</html>

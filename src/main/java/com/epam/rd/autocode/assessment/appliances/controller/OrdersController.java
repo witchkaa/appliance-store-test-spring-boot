@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
 import com.epam.rd.autocode.assessment.appliances.model.OrderFormDto;
+import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
@@ -114,5 +115,15 @@ public class OrdersController {
         log.info("Adding appliance id {} to order id {} with quantity {}", applianceId, ordersId, numbers);
         ordersService.addApplianceToOrder(ordersId, applianceId, numbers, price);
         return "redirect:/orders/edit/" + ordersId;
+    }
+    @GetMapping("/details/{id}")
+    public String orderDetails(@PathVariable Long id, Model model) {
+        Orders order = ordersService.getById(id);
+        List<OrderRow> rows = ordersService.getOrderRows(id);
+        model.addAttribute("order", order);
+        model.addAttribute("rows", rows);
+        BigDecimal amount = rows.stream().map(OrderRow::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        model.addAttribute("amount", amount);
+        return "order/orderDetails :: details"; // фрагмент Thymeleaf
     }
 }
