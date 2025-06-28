@@ -7,6 +7,7 @@ import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,21 +17,25 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('EMPLOYEE')")
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository repository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Override
     public List<Employee> getAll() {
         return repository.findAll();
     }
 
+    @Override
     public Employee save(Employee employee) {
         log.info("Saving employee: {}", employee);
         employee.setPassword(passwordEncoder.encode(employee.getPassword()));
         return repository.save(employee);
     }
 
+    @Override
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new EmployeeNotFoundException(id);
@@ -38,10 +43,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         repository.deleteById(id);
     }
 
+    @Override
     public Optional<Employee> findById(Long id) {
         return repository.findById(id);
     }
 
+    @Override
     public List<Employee> getAllSorted(String sortBy) {
         return repository.findAll(resolveSort(sortBy));
     }

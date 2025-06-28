@@ -13,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -98,13 +100,9 @@ public class OrderServiceImpl implements OrderService {
         return order;
     }
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public void approve(Long id) {
-        if (!isEmployee()) {
-            log.warn("Client tried to approve order");
-            throw new UnauthorizedOrderAccessException();
-        }
-
         log.info("Approving order id {}", id);
         Orders order = getById(id);
         order.setApproved(true);
@@ -112,13 +110,9 @@ public class OrderServiceImpl implements OrderService {
         ordersRepository.save(order);
     }
 
+    @Secured("ROLE_EMPLOYEE")
     @Override
     public void unapprove(Long id) {
-        if (!isEmployee()) {
-            log.warn("Client tried to unapprove order");
-            throw new UnauthorizedOrderAccessException();
-        }
-
         log.info("Unapproving order id {}", id);
         Orders order = getById(id);
         order.setApproved(false);

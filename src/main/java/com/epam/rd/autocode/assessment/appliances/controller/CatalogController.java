@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,7 @@ public class CatalogController {
 
     private final ApplianceService applianceService;
 
+    @PreAuthorize("hasRole('CLIENT')")
     @GetMapping
     public String catalog(@RequestParam(required = false) ProductType type,
                           @RequestParam(required = false, defaultValue = "price") String sort,
@@ -53,6 +55,8 @@ public class CatalogController {
 
         return "catalog/catalog";
     }
+
+    @PreAuthorize("hasRole('CLIENT')")
     @GetMapping("/appliances/{id}")
     public String viewAppliance(@PathVariable Long id, Model model, HttpServletRequest request) {
         Optional<Appliance> applianceOptional = applianceService.findById(id);
@@ -60,6 +64,8 @@ public class CatalogController {
         model.addAttribute("appliance", appliance);
         return "catalog/appliance-details";
     }
+
+    @PreAuthorize("hasRole('CLIENT')")
     @GetMapping("/load")
     public String loadMore(@RequestParam(defaultValue = "0") int page,
                            @RequestParam(required = false) ProductType type,

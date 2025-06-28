@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,16 +26,19 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     private final ManufacturerRepository manufacturerRepository;
     private final MessageSource messageSource;
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public List<Manufacturer> getAll() {
         return manufacturerRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public Manufacturer save(Manufacturer manufacturer) {
         return manufacturerRepository.save(manufacturer);
     }
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public void delete(Long id) {
         if (!manufacturerRepository.existsById(id)) {
@@ -50,11 +54,13 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         }
     }
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public Optional<Manufacturer> findById(Long id) {
         return manufacturerRepository.findById(id);
     }
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public List<Manufacturer> search(Long id, String name) {
         if (id != null) {
