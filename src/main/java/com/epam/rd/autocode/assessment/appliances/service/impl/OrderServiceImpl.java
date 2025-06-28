@@ -180,20 +180,28 @@ public class OrderServiceImpl implements OrderService {
     public Orders createOrderFromCart(List<CartItem> items, Client client) {
         Orders order = new Orders();
         order.setClient(client);
+        order.setApproved(false);
 
         Set<OrderRow> rows = new HashSet<>();
-        int lineNumber = 1;
+        BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (CartItem item : items) {
             OrderRow row = new OrderRow();
             row.setAppliance(item.getAppliance());
             row.setOrder(order);
-            row.setAmount(item.getAppliance().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-            row.setNumber((long) lineNumber++);
+            row.setNumber((long) item.getQuantity());
+            BigDecimal amount = item.getAppliance().getPrice()
+                    .multiply(BigDecimal.valueOf(item.getQuantity()));
+            row.setAmount(amount);
+
+            totalAmount = totalAmount.add(amount);
+
             rows.add(row);
         }
 
         order.setOrderRowSet(rows);
+        order.setAmount(totalAmount);
+        log.info("createOrderFromCart:" + totalAmount);
         return ordersRepository.save(order);
     }
 
@@ -235,7 +243,7 @@ public class OrderServiceImpl implements OrderService {
                 .getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
     }
-    
+
 
     private String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();

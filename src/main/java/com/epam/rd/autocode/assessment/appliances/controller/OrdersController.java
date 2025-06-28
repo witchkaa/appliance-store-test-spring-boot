@@ -164,9 +164,7 @@ public class OrdersController {
         List<OrderRow> rows = ordersService.getOrderRows(id);
         model.addAttribute("order", order);
         model.addAttribute("rows", rows);
-        BigDecimal amount = rows.stream()
-                .map(item -> item.getAppliance().getPrice().multiply(BigDecimal.valueOf(item.getNumber())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal amount = order.getAmount();
         model.addAttribute("amount", amount);
         return "order/orderDetails :: details";
     }
