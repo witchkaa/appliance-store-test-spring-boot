@@ -58,10 +58,10 @@ public class CartController {
     public String checkout(RedirectAttributes redirectAttributes) {
         try {
             cartService.checkout();
-            redirectAttributes.addFlashAttribute("message", "Заказ успешно оформлен");
+            redirectAttributes.addFlashAttribute("message", "");
             return "redirect:/orders";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Ошибка при оформлении заказа: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",  "");
             return "redirect:/cart";
         }
     }

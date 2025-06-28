@@ -54,7 +54,7 @@ public class CartServiceImpl implements CartService {
         cartItem.setQuantity(cartItem.getQuantity() + quantity);
         cartItemRepository.save(cartItem);
     }
-
+    @Transactional
     public void removeFromCart(Long applianceId) {
         Client client = getCurrentClient();
         Appliance appliance = applianceService.findById(applianceId)

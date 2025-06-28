@@ -6,13 +6,11 @@ import com.epam.rd.autocode.assessment.appliances.exception.UnauthorizedOrderAcc
 import com.epam.rd.autocode.assessment.appliances.model.*;
 import com.epam.rd.autocode.assessment.appliances.repository.*;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -79,25 +77,19 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @PreAuthorize("@authService.isEmployee() || @authService.isOrderOwner(#id)")
     public void delete(Long id) {
         log.warn("Deleting order id {}", id);
         Orders order = getById(id);
-        checkAccess(order);
         ordersRepository.delete(order);
     }
 
     @Override
+    @PreAuthorize("@authService.isEmployee() || @authService.isOrderOwner(#id)")
     public Orders getById(Long id) {
         log.debug("Getting order by id: {}", id);
-        Orders order = ordersRepository.findById(id)
+        return ordersRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
-
-        if (isClient() && !isCurrentClient(order.getClient())) {
-            log.error("Client tried to access an order they do not own");
-            throw new UnauthorizedOrderAccessException();
-        }
-
-        return order;
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
@@ -243,11 +235,7 @@ public class OrderServiceImpl implements OrderService {
                 .getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
     }
-
-    private boolean isCurrentClient(Client orderClient) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return orderClient.getEmail().equals(email);
-    }
+    
 
     private String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
