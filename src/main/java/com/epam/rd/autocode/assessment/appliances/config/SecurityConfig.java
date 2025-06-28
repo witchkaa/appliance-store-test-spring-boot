@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/reset/**").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/locale", "/login").permitAll()
                         .requestMatchers("/employees/**").hasRole("EMPLOYEE")
                         .requestMatchers("/clients/**").hasRole("EMPLOYEE")
