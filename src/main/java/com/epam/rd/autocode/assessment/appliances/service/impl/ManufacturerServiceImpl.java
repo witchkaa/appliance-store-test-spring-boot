@@ -1,5 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerDeleteException;
+import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
 import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
@@ -19,44 +21,44 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ManufacturerServiceImpl implements ManufacturerService {
+
     private final ManufacturerRepository manufacturerRepository;
-    @Autowired
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
+
     @Override
     public List<Manufacturer> getAll() {
-        log.debug("Fetching all manufacturers");
         return manufacturerRepository.findAll();
     }
 
     @Override
     public Manufacturer save(Manufacturer manufacturer) {
-        log.info("Saving manufacturer: {}", manufacturer);
         return manufacturerRepository.save(manufacturer);
     }
 
     @Override
     public void delete(Long id) {
-        log.warn("Deleting manufacturer with id {}", id);
+        if (!manufacturerRepository.existsById(id)) {
+            throw new ManufacturerNotFoundException(id);
+        }
+
         try {
             manufacturerRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
             Locale locale = LocaleContextHolder.getLocale();
             String message = messageSource.getMessage("error.manufacturer.delete", null, locale);
-            throw new IllegalStateException(message);
+            throw new ManufacturerDeleteException(message);
         }
     }
 
     @Override
     public Optional<Manufacturer> findById(Long id) {
-        log.debug("Finding manufacturer by id: {}", id);
         return manufacturerRepository.findById(id);
     }
+
     @Override
     public List<Manufacturer> search(Long id, String name) {
         if (id != null) {
-            return manufacturerRepository.findById(id)
-                    .map(List::of)
-                    .orElse(List.of());
+            return manufacturerRepository.findById(id).map(List::of).orElse(List.of());
         }
 
         if (name != null && !name.isBlank()) {

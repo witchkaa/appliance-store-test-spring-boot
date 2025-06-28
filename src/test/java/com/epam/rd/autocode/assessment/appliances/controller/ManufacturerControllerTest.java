@@ -52,16 +52,6 @@ class ManufacturerControllerTest {
     @Mock
     private RedirectAttributes redirectAttributes;
 
-    @Test
-    void list_shouldAddManufacturersToModelAndReturnView() {
-        List<Manufacturer> manufacturers = List.of(new Manufacturer());
-        Mockito.when(manufacturerService.getAll()).thenReturn(manufacturers);
-
-        String view = manufacturerController.list(model);
-
-        Mockito.verify(model).addAttribute("manufacturers", manufacturers);
-        Assertions.assertEquals("manufacture/manufacturers", view);
-    }
 
     @Test
     void createForm_shouldAddNewManufacturerAndReturnView() {

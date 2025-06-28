@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import com.epam.rd.autocode.assessment.appliances.exception.ClientNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import jakarta.validation.Valid;
@@ -24,7 +25,6 @@ public class ClientController {
     public String list(@RequestParam(required = false) Long id,
                        @RequestParam(required = false) String name,
                        Model model) {
-        log.info("Searching clients with id={} and name='{}'", id, name);
         List<Client> clients = clientService.search(id, name);
         model.addAttribute("clients", clients);
         model.addAttribute("searchId", id);
@@ -34,50 +34,49 @@ public class ClientController {
 
     @GetMapping("/add")
     public String createForm(Model model) {
-        log.info("Opening client creation form");
         model.addAttribute("client", new Client());
         return "client/newClient";
     }
 
     @PostMapping("/add-client")
-    public String save(@ModelAttribute @Valid Client client, BindingResult result) {
+    public String save(@ModelAttribute @Valid Client client,
+                       BindingResult result) {
         if (result.hasErrors()) {
-            log.warn("Validation errors while adding client: {}", result.getAllErrors());
             return "client/newClient";
         }
-        log.info("Saving client: {}", client);
         clientService.save(client);
         return "redirect:/clients";
     }
 
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
-        log.info("Deleting client with id: {}", id);
-        clientService.delete(id);
+        clientService.delete(id); // выбросит ClientNotFoundException, если не найден
         return "redirect:/clients";
     }
+
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        log.info("Opening edit form for client with id: {}", id);
         Client client = clientService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid client ID: " + id));
+                .orElseThrow(() -> new ClientNotFoundException(id));
         model.addAttribute("client", client);
         return "client/editClient";
     }
 
     @PostMapping("/{id}/edit")
-    public String update(@PathVariable Long id, @ModelAttribute @Valid Client client, BindingResult result) {
+    public String update(@PathVariable Long id,
+                         @ModelAttribute @Valid Client client,
+                         BindingResult result) {
         if (result.hasErrors()) {
-            log.warn("Validation errors while editing client: {}", result.getAllErrors());
             return "client/editClient";
         }
-        client.setId(id);
+
         Client existing = clientService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid client ID"));
+                .orElseThrow(() -> new ClientNotFoundException(id));
 
         if (client.getPassword() == null || client.getPassword().isBlank()) {
-            client.setPassword(existing.getPassword());
+            client.setPassword(existing.getPassword()); // сохраняем старый, если не ввели
         }
+        client.setId(id);
         clientService.save(client);
         return "redirect:/clients";
     }

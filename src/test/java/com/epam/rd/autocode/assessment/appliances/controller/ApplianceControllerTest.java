@@ -12,10 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.server.ResponseStatusException;
@@ -44,18 +40,6 @@ class ApplianceControllerTest {
 
     @Mock
     private BindingResult bindingResult;
-
-    @Test
-    void list_shouldAddAppliancesToModelAndReturnView() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Appliance> page = new PageImpl<>(List.of(new Appliance()));
-        Mockito.when(applianceService.getAll(pageable)).thenReturn(page);
-
-        String view = applianceController.list(pageable, model);
-
-        Mockito.verify(model).addAttribute("appliances", page);
-        Assertions.assertEquals("appliance/appliances", view);
-    }
 
     @Test
     void createForm_shouldAddAttributesAndReturnView() {

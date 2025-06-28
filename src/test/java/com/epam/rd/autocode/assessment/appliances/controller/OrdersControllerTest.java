@@ -1,180 +1,175 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
-import com.epam.rd.autocode.assessment.appliances.model.Appliance;
-import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
+
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
-import com.epam.rd.autocode.assessment.appliances.service.ClientService;
-import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
+
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
-import com.epam.rd.autocode.assessment.appliances.service.impl.ApplianceServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.epam.rd.autocode.assessment.appliances.repository.*;
 
-import org.junit.jupiter.api.Assertions;
-
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.ui.Model;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(OrdersController.class)
 class OrdersControllerTest {
 
-    @Mock
-    private OrderService orderService;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Mock
-    private ClientService clientService;
+    @MockBean
+    private OrderService ordersService;
 
-    @Mock
-    private EmployeeService employeeService;
+    private Orders sampleOrder;
 
-    @InjectMocks
-    private OrdersController ordersController;
-
-    @Mock
-    private Model model;
-
-    @Test
-    void list_shouldAddOrdersAndPageToModel() {
-        Pageable pageable = PageRequest.of(0, 5);
-        Orders order = new Orders();
-        Page<Orders> ordersPage = new PageImpl<>(List.of(order));
-
-        Mockito.when(orderService.getAllPageable(pageable)).thenReturn(ordersPage);
-
-        String view = ordersController.list(pageable, model);
-
-        Mockito.verify(model).addAttribute("orders", ordersPage.getContent());
-        Mockito.verify(model).addAttribute("page", ordersPage);
-        Assertions.assertEquals("order/orders", view);
+    @BeforeEach
+    void setup() {
+        sampleOrder = new Orders();
+        sampleOrder.setId(1L);
+        sampleOrder.setApproved(false);
+        sampleOrder.setAmount(BigDecimal.valueOf(1000));
+        // setup other fields as needed
     }
 
     @Test
-    void createForm_shouldAddOrderAndAppliances() {
-        List<Appliance> appliances = List.of(new Appliance());
-        Mockito.when(orderService.getAvailableAppliances()).thenReturn(appliances);
+    void testListOrders_noParams_returnsPage() throws Exception {
+        when(ordersService.isEmployee()).thenReturn(true);
+        when(ordersService.getAllPageable(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(sampleOrder)));
 
-        String view = ordersController.createForm(model);
+        mockMvc.perform(MockMvcRequestBuilders.get("/orders"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("orders"))
+                .andExpect(view().name("order/orders"));
 
-        Mockito.verify(model).addAttribute(eq("order"), any(Orders.class));
-        Mockito.verify(model).addAttribute("appliances", appliances);
-        Assertions.assertEquals("order/newOrder", view);
+        verify(ordersService).getAllPageable(any(Pageable.class));
     }
 
     @Test
-    void saveOrder_whenNoAppliancesSelected_shouldReturnFormWithError() {
-        String view = ordersController.saveOrder(Collections.emptyList(), List.of(1), model);
+    void testListOrders_withSearchParams_callsSearch() throws Exception {
+        when(ordersService.isEmployee()).thenReturn(true);
+        when(ordersService.searchOrders(eq(1L), eq("clientName"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(sampleOrder)));
 
-        Mockito.verify(model).addAttribute(eq("error"), anyString());
-        Mockito.verify(model).addAttribute(eq("appliances"), anyList());
-        Assertions.assertEquals("order/newOrder", view);
+        mockMvc.perform(MockMvcRequestBuilders.get("/orders")
+                        .param("id", "1")
+                        .param("client", "clientName"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("orders"))
+                .andExpect(view().name("order/orders"));
+
+        verify(ordersService).searchOrders(eq(1L), eq("clientName"), any(Pageable.class));
     }
 
     @Test
-    void saveOrder_whenMismatchApplianceAndQuantity_shouldReturnFormWithError() {
-        String view = ordersController.saveOrder(List.of(1L, 2L), List.of(1), model);
-
-        Mockito.verify(model).addAttribute(eq("error"), anyString());
-        Mockito.verify(model).addAttribute(eq("appliances"), anyList());
-        Assertions.assertEquals("order/newOrder", view);
+    void testCreateForm_returnsNewOrderForm() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/orders/add"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("order"))
+                .andExpect(model().attributeExists("appliances"))
+                .andExpect(view().name("order/newOrder"));
     }
 
     @Test
-    void saveOrder_whenValidInput_shouldRedirect() {
-        List<Long> applianceIds = List.of(1L, 2L);
-        List<Integer> quantities = List.of(3, 4);
+    void testSaveOrder_validRequest_redirects() throws Exception {
+        when(ordersService.getAvailableAppliances()).thenReturn(List.of());
 
-        String view = ordersController.saveOrder(applianceIds, quantities, model);
+        mockMvc.perform(MockMvcRequestBuilders.post("/orders/add-order")
+                        .param("applianceIds", "1", "2")
+                        .param("quantities", "3", "5"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/orders"));
 
-        Mockito.verify(orderService).createOrderWithItems(applianceIds, quantities);
-        Assertions.assertEquals("redirect:/orders", view);
+        verify(ordersService).createOrderWithItems(List.of(1L, 2L), List.of(3, 5));
     }
 
     @Test
-    void editForm_shouldAddOrderAndRows() {
-        Long id = 1L;
-        Orders order = new Orders();
-        List<OrderRow> rows = List.of(new OrderRow());
+    void testSaveOrder_noAppliances_showsError() throws Exception {
+        when(ordersService.getAvailableAppliances()).thenReturn(List.of());
 
-        Mockito.when(orderService.getById(id)).thenReturn(order);
-        Mockito.when(orderService.getOrderRows(id)).thenReturn(rows);
-
-        String view = ordersController.editForm(id, model);
-
-        Mockito.verify(model).addAttribute("order", order);
-        Mockito.verify(model).addAttribute("rows", rows);
-        Assertions.assertEquals("order/editOrder", view);
+        mockMvc.perform(MockMvcRequestBuilders.post("/orders/add-order"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("error"))
+                .andExpect(view().name("order/newOrder"));
     }
 
     @Test
-    void delete_shouldCallServiceAndRedirect() {
-        Long id = 1L;
+    void testDeleteOrder_success_redirects() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/orders/delete/1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/orders"));
 
-        String view = ordersController.delete(id);
-
-        Mockito.verify(orderService).delete(id);
-        Assertions.assertEquals("redirect:/orders", view);
+        verify(ordersService).delete(1L);
     }
 
     @Test
-    void approve_shouldCallServiceAndRedirect() {
-        Long id = 1L;
+    void testApproveOrder_success_redirects() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/orders/approve/1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/orders"));
 
-        String view = ordersController.approve(id);
-
-        Mockito.verify(orderService).approve(id);
-        Assertions.assertEquals("redirect:/orders", view);
+        verify(ordersService).approve(1L);
     }
 
     @Test
-    void unapprove_shouldCallServiceAndRedirect() {
-        Long id = 1L;
+    void testUnapproveOrder_success_redirects() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/orders/unapproved/1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/orders"));
 
-        String view = ordersController.unapprove(id);
-
-        Mockito.verify(orderService).unapprove(id);
-        Assertions.assertEquals("redirect:/orders", view);
+        verify(ordersService).unapprove(1L);
     }
 
     @Test
-    void choiceAppliance_shouldAddOrdersIdAndAppliances() {
-        Long ordersId = 5L;
-        List<Appliance> appliances = List.of(new Appliance());
+    void testAddIntoOrder_redirects() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/orders/add-into-order")
+                        .param("ordersId", "1")
+                        .param("applianceId", "10")
+                        .param("numbers", "2")
+                        .param("price", "100.00"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/orders/edit/1"));
 
-        Mockito.when(orderService.getAvailableAppliances()).thenReturn(appliances);
-
-        String view = ordersController.choiceAppliance(ordersId, model);
-
-        Mockito.verify(model).addAttribute("ordersId", ordersId);
-        Mockito.verify(model).addAttribute("appliances", appliances);
-        Assertions.assertEquals("order/choiceAppliance", view);
+        verify(ordersService).addApplianceToOrder(1L, 10L, 2, new BigDecimal("100.00"));
     }
 
     @Test
-    void addIntoOrder_shouldCallServiceAndRedirect() {
-        Long ordersId = 2L;
-        Long applianceId = 3L;
-        int numbers = 5;
-        BigDecimal price = BigDecimal.valueOf(100);
+    void testOrderDetails_returnsFragment() throws Exception {
+        when(ordersService.getById(1L)).thenReturn(sampleOrder);
+        when(ordersService.getOrderRows(1L)).thenReturn(List.of());
 
-        String view = ordersController.addIntoOrder(ordersId, applianceId, numbers, price);
-
-        Mockito.verify(orderService).addApplianceToOrder(ordersId, applianceId, numbers, price);
-        Assertions.assertEquals("redirect:/orders/edit/" + ordersId, view);
+        mockMvc.perform(MockMvcRequestBuilders.get("/orders/details/1"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("order"))
+                .andExpect(model().attributeExists("rows"))
+                .andExpect(model().attributeExists("amount"))
+                .andExpect(view().name("order/orderDetails :: details"));
     }
+
+    @Test
+    void testCreateFromDto_redirectsOnSuccess() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/orders/add-order-dto")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("applianceIds[0]", "1")
+                        .param("quantities[0]", "3"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/orders"));
+
+        verify(ordersService).createOrderWithAppliances(any());
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.exception.EmployeeNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.repository.EmployeeRepository;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
@@ -16,52 +17,38 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
+
     private final EmployeeRepository repository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public List<Employee> getAll() {
-        log.debug("Getting all employees from repository");
         return repository.findAll();
     }
 
     public Employee save(Employee employee) {
-        log.info("Saving employee to repository: {}", employee);
+        log.info("Saving employee: {}", employee);
         employee.setPassword(passwordEncoder.encode(employee.getPassword()));
         return repository.save(employee);
     }
 
     public void delete(Long id) {
-        log.warn("Deleting employee with id {}", id);
+        if (!repository.existsById(id)) {
+            throw new EmployeeNotFoundException(id);
+        }
         repository.deleteById(id);
     }
 
     public Optional<Employee> findById(Long id) {
-        log.debug("Finding employee by id: {}", id);
         return repository.findById(id);
     }
+
     public List<Employee> getAllSorted(String sortBy) {
-        log.debug("Getting all employees sorted by {}", sortBy);
-
-        Sort sort;
-        switch (sortBy) {
-            case "name" -> sort = Sort.by("name");
-            case "department" -> sort = Sort.by("department");
-            default -> sort = Sort.by("id"); // fallback
-        }
-
-        return repository.findAll(sort);
+        return repository.findAll(resolveSort(sortBy));
     }
+
     @Override
     public List<Employee> searchAndSort(Long id, String name, String department, String sortBy) {
-        log.debug("Searching employees by id={}, name='{}', department='{}', sorted by '{}'",
-                id, name, department, sortBy);
-
-        Sort sort;
-        switch (sortBy) {
-            case "name" -> sort = Sort.by("name");
-            case "department" -> sort = Sort.by("department");
-            default -> sort = Sort.by("id");
-        }
+        Sort sort = resolveSort(sortBy);
 
         if (id != null) {
             return repository.findById(id)
@@ -78,5 +65,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         return repository.findAll(sort);
+    }
+
+    private Sort resolveSort(String sortBy) {
+        return switch (sortBy) {
+            case "name" -> Sort.by("name");
+            case "department" -> Sort.by("department");
+            default -> Sort.by("id");
+        };
     }
 }

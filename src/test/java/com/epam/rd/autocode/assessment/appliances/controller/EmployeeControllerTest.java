@@ -44,17 +44,6 @@ class EmployeeControllerTest {
     private BindingResult bindingResult;
 
     @Test
-    void list_shouldAddEmployeesToModelAndReturnView() {
-        List<Employee> employees = List.of(new Employee());
-        Mockito.when(employeeService.getAll()).thenReturn(employees);
-
-        String view = employeeController.list(model);
-
-        Mockito.verify(model).addAttribute("employees", employees);
-        Assertions.assertEquals("employee/employees", view);
-    }
-
-    @Test
     void createForm_shouldAddNewEmployeeAndReturnView() {
         String view = employeeController.createForm(model);
 

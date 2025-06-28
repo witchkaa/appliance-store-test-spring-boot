@@ -1,5 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerDeleteException;
+import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
 import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
 import jakarta.validation.Valid;
@@ -23,7 +25,6 @@ public class ManufacturerController {
     public String list(@RequestParam(required = false) Long id,
                        @RequestParam(required = false) String name,
                        Model model) {
-        log.info("Searching manufacturers by id={} and name={}", id, name);
         model.addAttribute("manufacturers", manufacturerService.search(id, name));
         model.addAttribute("paramId", id);
         model.addAttribute("paramName", name);
@@ -32,7 +33,6 @@ public class ManufacturerController {
 
     @GetMapping("/add")
     public String createForm(Model model) {
-        log.info("Opening manufacturer creation form");
         model.addAttribute("manufacturer", new Manufacturer());
         return "manufacture/newManufacturer";
     }
@@ -40,22 +40,19 @@ public class ManufacturerController {
     @PostMapping("/add-manufacturer")
     public String save(@ModelAttribute @Valid Manufacturer manufacturer, BindingResult result) {
         if (result.hasErrors()) {
-            log.warn("Validation errors while saving manufacturer: {}", result.getAllErrors());
             return "manufacture/newManufacturer";
         }
-        log.info("Saving manufacturer: {}", manufacturer);
         manufacturerService.save(manufacturer);
         return "redirect:/manufacturers";
     }
 
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        log.info("Deleting manufacturer with id {}", id);
         try {
             manufacturerService.delete(id);
             redirectAttributes.addFlashAttribute("success", "Manufacturer deleted successfully.");
-        } catch (IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (ManufacturerDeleteException | ManufacturerNotFoundException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/manufacturers";
     }

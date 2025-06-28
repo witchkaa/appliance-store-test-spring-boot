@@ -11,27 +11,26 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/orders")
 @RequiredArgsConstructor
-@Slf4j
 public class OrdersController {
 
     private final OrderService ordersService;
 
     @GetMapping
-    public String list(
-            @RequestParam(required = false) Long id,
-            @RequestParam(required = false) String client,
-            @PageableDefault(size = 5, sort = "id") Pageable pageable,
-            Model model) {
+    public String list(@RequestParam(required = false) Long id,
+                       @RequestParam(required = false) String client,
+                       @PageableDefault(size = 5, sort = "id") Pageable pageable,
+                       Model model) {
 
         log.info("Fetching orders: id={}, client={}", id, client);
-
         Page<Orders> ordersPage;
 
         if (ordersService.isEmployee()) {
@@ -57,15 +56,14 @@ public class OrdersController {
     }
 
     @PostMapping("/add-order")
-    public String saveOrder(
-            @RequestParam("applianceIds") List<Long> applianceIds,
-            @RequestParam("quantities") List<Integer> quantities,
-            Model model) {
+    public String saveOrder(@RequestParam("applianceIds") List<Long> applianceIds,
+                            @RequestParam("quantities") List<Integer> quantities,
+                            Model model) {
 
         if (applianceIds == null || applianceIds.isEmpty()) {
             model.addAttribute("error", "You must select at least one appliance.");
             model.addAttribute("appliances", ordersService.getAvailableAppliances());
-            return "order/newOrder"; // Возврат на форму с ошибкой
+            return "order/newOrder";
         }
 
         if (applianceIds.size() != quantities.size()) {
@@ -74,44 +72,71 @@ public class OrdersController {
             return "order/newOrder";
         }
 
-        ordersService.createOrderWithItems(applianceIds, quantities);
+        try {
+            ordersService.createOrderWithItems(applianceIds, quantities);
+        } catch (Exception e) {
+            log.error("Failed to create order", e);
+            model.addAttribute("error", "Failed to create order: " + e.getMessage());
+            model.addAttribute("appliances", ordersService.getAvailableAppliances());
+            return "order/newOrder";
+        }
 
         return "redirect:/orders";
     }
 
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
-        log.info("Opening edit form for order id {}", id);
-        Orders order = ordersService.getById(id);
-        model.addAttribute("order", order);
-        model.addAttribute("rows", ordersService.getOrderRows(id)); // предполагаем, что метод возвращает детали
-        return "order/editOrder";
+    public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Orders order = ordersService.getById(id);
+            model.addAttribute("order", order);
+            model.addAttribute("rows", ordersService.getOrderRows(id));
+            return "order/editOrder";
+        } catch (Exception e) {
+            log.error("Failed to open edit form for order {}", id, e);
+            redirectAttributes.addFlashAttribute("error", "Failed to open order: " + e.getMessage());
+            return "redirect:/orders";
+        }
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
-        log.info("Deleting order id {}", id);
-        ordersService.delete(id);
+    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            ordersService.delete(id);
+            redirectAttributes.addFlashAttribute("success", "Order deleted successfully.");
+        } catch (Exception e) {
+            log.error("Error deleting order {}", id, e);
+            redirectAttributes.addFlashAttribute("error", "Error deleting order: " + e.getMessage());
+        }
         return "redirect:/orders";
     }
 
     @GetMapping("/approve/{id}")
-    public String approve(@PathVariable Long id) {
-        log.info("Approving order id {}", id);
-        ordersService.approve(id);
+    public String approve(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            ordersService.approve(id);
+            redirectAttributes.addFlashAttribute("success", "Order approved.");
+        } catch (Exception e) {
+            log.error("Error approving order {}", id, e);
+            redirectAttributes.addFlashAttribute("error", "Error approving order: " + e.getMessage());
+        }
         return "redirect:/orders";
     }
 
     @GetMapping("/unapproved/{id}")
-    public String unapprove(@PathVariable Long id) {
-        log.info("Unapproving order id {}", id);
-        ordersService.unapprove(id);
+    public String unapprove(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            ordersService.unapprove(id);
+            redirectAttributes.addFlashAttribute("success", "Order unapproved.");
+        } catch (Exception e) {
+            log.error("Error unapproving order {}", id, e);
+            redirectAttributes.addFlashAttribute("error", "Error unapproving order: " + e.getMessage());
+        }
         return "redirect:/orders";
     }
 
     @GetMapping("/choice-appliance/{ordersId}")
     public String choiceAppliance(@PathVariable Long ordersId, Model model) {
-        log.info("Getting appliance list for order id {}", ordersId);
+        log.info("Choosing appliance for order {}", ordersId);
         model.addAttribute("ordersId", ordersId);
         model.addAttribute("appliances", ordersService.getAvailableAppliances());
         return "order/choiceAppliance";
@@ -121,19 +146,28 @@ public class OrdersController {
     public String addIntoOrder(@RequestParam Long ordersId,
                                @RequestParam Long applianceId,
                                @RequestParam int numbers,
-                               @RequestParam BigDecimal price) {
-        log.info("Adding appliance id {} to order id {} with quantity {}", applianceId, ordersId, numbers);
-        ordersService.addApplianceToOrder(ordersId, applianceId, numbers, price);
+                               @RequestParam BigDecimal price,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            log.info("Adding appliance {} into order {}", applianceId, ordersId);
+            ordersService.addApplianceToOrder(ordersId, applianceId, numbers, price);
+        } catch (Exception e) {
+            log.error("Failed to add appliance to order", e);
+            redirectAttributes.addFlashAttribute("error", "Failed to add appliance: " + e.getMessage());
+        }
         return "redirect:/orders/edit/" + ordersId;
     }
+
     @GetMapping("/details/{id}")
     public String orderDetails(@PathVariable Long id, Model model) {
         Orders order = ordersService.getById(id);
         List<OrderRow> rows = ordersService.getOrderRows(id);
         model.addAttribute("order", order);
         model.addAttribute("rows", rows);
-        BigDecimal amount = rows.stream().map(OrderRow::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal amount = rows.stream()
+                .map(OrderRow::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         model.addAttribute("amount", amount);
-        return "order/orderDetails :: details"; // фрагмент Thymeleaf
+        return "order/orderDetails :: details";
     }
 }

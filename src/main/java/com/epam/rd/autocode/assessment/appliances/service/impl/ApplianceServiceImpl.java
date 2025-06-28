@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.exception.ApplianceNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Appliance;
 import com.epam.rd.autocode.assessment.appliances.model.ProductType;
 import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository;
@@ -23,32 +24,32 @@ public class ApplianceServiceImpl implements ApplianceService {
 
     @Override
     public Page<Appliance> getAll(Pageable pageable) {
-        log.debug("Fetching appliances page: size={}, page={}", pageable.getPageSize(), pageable.getPageNumber());
         return applianceRepository.findAll(pageable);
     }
 
     @Override
     public Appliance save(Appliance appliance) {
-        log.info("Saving appliance: {}", appliance);
         return applianceRepository.save(appliance);
     }
 
     @Override
     public void delete(Long id) {
-        log.warn("Deleting appliance with id: {}", id);
+        if (!applianceRepository.existsById(id)) {
+            throw new ApplianceNotFoundException(id);
+        }
         applianceRepository.deleteById(id);
     }
 
     @Override
     public Optional<Appliance> findById(Long id) {
-        log.debug("Finding appliance by id: {}", id);
         return applianceRepository.findById(id);
     }
+
     @Override
     public Page<Appliance> getByType(ProductType type, Pageable pageable) {
-        log.debug("Fetching appliances by type {} with pageable {}", type, pageable);
         return applianceRepository.findByType(type, pageable);
     }
+
     @Override
     public Page<Appliance> searchAppliances(Long id, String name, String manufacturer, Pageable pageable) {
         if (id != null) {

@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import com.epam.rd.autocode.assessment.appliances.exception.EmployeeNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -27,46 +28,41 @@ public class EmployeeController {
                        @RequestParam(required = false, defaultValue = "id") String sortBy,
                        Model model) {
 
-        log.info("Searching/sorting employees by id={}, name={}, department={}, sortBy={}", id, name, department, sortBy);
         List<Employee> employees = employeeService.searchAndSort(id, name, department, sortBy);
-
         model.addAttribute("employees", employees);
         model.addAttribute("currentSort", sortBy);
         model.addAttribute("searchId", id);
         model.addAttribute("searchName", name);
         model.addAttribute("searchDepartment", department);
-
         return "employee/employees";
     }
 
     @GetMapping("/add")
     public String createForm(Model model) {
-        log.info("Opening form to add a new employee");
         model.addAttribute("employee", new Employee());
         return "employee/newEmployee";
     }
 
     @PostMapping("/add-employee")
-    public String save(@ModelAttribute @Valid Employee employee, BindingResult result) {
+    public String save(@ModelAttribute @Valid Employee employee,
+                       BindingResult result) {
         if (result.hasErrors()) {
-            log.warn("Validation error while adding employee: {}", result.getAllErrors());
             return "employee/newEmployee";
         }
-        log.info("Saving employee: {}", employee);
         employeeService.save(employee);
         return "redirect:/employees";
     }
 
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
-        log.info("Deleting employee with id: {}", id);
-        employeeService.delete(id);
+        employeeService.delete(id); // выбросит EmployeeNotFoundException, если не найден
         return "redirect:/employees";
     }
+
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Employee employee = employeeService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
         model.addAttribute("employee", employee);
         return "employee/editEmployee";
     }
@@ -80,7 +76,7 @@ public class EmployeeController {
         }
 
         Employee existing = employeeService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid employee ID"));
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
 
         if (employee.getPassword() == null || employee.getPassword().isBlank()) {
             employee.setPassword(existing.getPassword());

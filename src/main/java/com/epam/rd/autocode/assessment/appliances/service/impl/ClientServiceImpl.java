@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.exception.ClientNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
@@ -15,10 +16,11 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
+
     private final ClientRepository repository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     public List<Client> getAll() {
-        log.debug("Fetching all clients");
         return repository.findAll();
     }
 
@@ -29,26 +31,24 @@ public class ClientServiceImpl implements ClientService {
     }
 
     public void delete(Long id) {
-        log.warn("Deleting client with id: {}", id);
+        if (!repository.existsById(id)) {
+            throw new ClientNotFoundException(id);
+        }
         repository.deleteById(id);
     }
 
     public Optional<Client> findById(Long id) {
-        log.debug("Finding client by id: {}", id);
         return repository.findById(id);
     }
+
     @Override
     public List<Client> search(Long id, String name) {
         if (id != null) {
-            return repository.findById(id)
-                    .map(List::of)
-                    .orElseGet(List::of);
+            return repository.findById(id).map(List::of).orElseGet(List::of);
         }
-
         if (name != null && !name.isBlank()) {
             return repository.findByNameContainingIgnoreCase(name);
         }
-
         return repository.findAll();
     }
 }

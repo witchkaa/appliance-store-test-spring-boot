@@ -1,5 +1,8 @@
 package com.epam.rd.autocode.assessment.appliances.service.impl;
 
+import com.epam.rd.autocode.assessment.appliances.exception.ApplianceNotFoundException;
+import com.epam.rd.autocode.assessment.appliances.exception.OrderNotFoundException;
+import com.epam.rd.autocode.assessment.appliances.exception.UnauthorizedOrderAccessException;
 import com.epam.rd.autocode.assessment.appliances.model.*;
 import com.epam.rd.autocode.assessment.appliances.repository.*;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
@@ -18,9 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     private final OrdersRepository ordersRepository;
@@ -41,16 +44,20 @@ public class OrderServiceImpl implements OrderService {
 
         return Page.empty();
     }
+
     @Override
     public List<Orders> getAll() {
-        log.debug("Fetching orders");
+        log.debug("Fetching all orders");
+
         if (isEmployee()) {
             return ordersRepository.findAll();
         } else if (isClient()) {
             return ordersRepository.findByClient_Email(getCurrentUsername());
         }
+
         return Collections.emptyList();
     }
+
     @Override
     public List<Orders> getByClientId(Long clientId) {
         log.debug("Fetching orders for client id {}", clientId);
@@ -81,57 +88,42 @@ public class OrderServiceImpl implements OrderService {
     public Orders getById(Long id) {
         log.debug("Getting order by id: {}", id);
         Orders order = ordersRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found with id " + id));
+                .orElseThrow(() -> new OrderNotFoundException(id));
 
         if (isClient() && !isCurrentClient(order.getClient())) {
-            log.error("The client tried to access an order that does not belong to them");
-            throw new AccessDeniedException("Access denied to this order");
+            log.error("Client tried to access an order they do not own");
+            throw new UnauthorizedOrderAccessException();
         }
 
         return order;
     }
 
-    private boolean isClient() {
-        return SecurityContextHolder.getContext().getAuthentication()
-                .getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CLIENT"));
-    }
-
-    private boolean isCurrentClient(Client orderClient) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return orderClient.getEmail().equals(email);
-    }
-
     @Override
     public void approve(Long id) {
         if (!isEmployee()) {
-            log.info("Client tried to approve an order");
-            throw new AccessDeniedException("Only employees can approve orders");
+            log.warn("Client tried to approve order");
+            throw new UnauthorizedOrderAccessException();
         }
+
         log.info("Approving order id {}", id);
         Orders order = getById(id);
         order.setApproved(true);
         order.setEmployee(getCurrentEmployee());
         ordersRepository.save(order);
     }
-    private Employee getCurrentEmployee() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        return employeeRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Employee not found with email: " + email));
-    }
     @Override
     public void unapprove(Long id) {
         if (!isEmployee()) {
-            log.info("Client tried to unapprove an order");
-            throw new AccessDeniedException("Only employees can unapprove orders");
+            log.warn("Client tried to unapprove order");
+            throw new UnauthorizedOrderAccessException();
         }
+
         log.info("Unapproving order id {}", id);
-        ordersRepository.findById(id).ifPresent(order -> {
-            order.setApproved(false);
-            order.setEmployee(getCurrentEmployee());
-            ordersRepository.save(order);
-        });
+        Orders order = getById(id);
+        order.setApproved(false);
+        order.setEmployee(getCurrentEmployee());
+        ordersRepository.save(order);
     }
 
     @Override
@@ -153,11 +145,9 @@ public class OrderServiceImpl implements OrderService {
         log.info("Adding appliance {} to order {} with quantity {}", applianceId, orderId, numbers);
         Orders order = getById(orderId);
         checkAccess(order);
+
         Appliance appliance = applianceRepository.findById(applianceId)
-                .orElseThrow(() -> {
-                    log.error("Appliance not found with id {}", applianceId);
-                    return new EntityNotFoundException("Appliance not found with id " + applianceId);
-                });
+                .orElseThrow(() -> new ApplianceNotFoundException(applianceId));
 
         OrderRow row = new OrderRow();
         row.setOrder(order);
@@ -167,16 +157,6 @@ public class OrderServiceImpl implements OrderService {
 
         orderRowRepository.save(row);
         log.info("Appliance {} added to order {}", applianceId, orderId);
-    }
-    private void checkAccess(Orders order) {
-        if (isEmployee()) return;
-
-        if (isClient()) {
-            String currentEmail = getCurrentUsername();
-            if (!order.getClient().getEmail().equals(currentEmail)) {
-                throw new AccessDeniedException("Access denied to this order");
-            }
-        }
     }
 
     @Transactional
@@ -190,53 +170,11 @@ public class OrderServiceImpl implements OrderService {
         Set<OrderRow> orderRows = new HashSet<>();
 
         for (int i = 0; i < applianceIds.size(); i++) {
-            Appliance appliance = applianceRepository.findById(applianceIds.get(i))
-                    .orElseThrow(() -> new EntityNotFoundException("Appliance not found"));
-
-            OrderRow row = new OrderRow();
-            row.setOrder(order);
-            row.setAppliance(appliance);
-            row.setNumber(quantities.get(i).longValue());
-            row.setAmount(appliance.getPrice().multiply(BigDecimal.valueOf(quantities.get(i))));
-
-            orderRows.add(row);
-        }
-
-        order.setOrderRowSet(orderRows);
-
-        ordersRepository.save(order);
-    }
-    private Client getCurrentClient() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return clientRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Client not found with email: " + email));
-    }
-    public boolean isEmployee() {
-        return SecurityContextHolder.getContext().getAuthentication()
-                .getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
-    }
-
-    private String getCurrentUsername() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
-    }
-    @Transactional
-    public void createOrderWithAppliances(OrderFormDto orderForm) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Client client = clientRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Client not found"));
-
-        Orders order = new Orders();
-        order.setClient(client);
-        order.setApproved(false);
-        order = ordersRepository.save(order);
-
-        for (int i = 0; i < orderForm.getApplianceIds().size(); i++) {
-            Long applianceId = orderForm.getApplianceIds().get(i);
-            Integer qty = orderForm.getQuantities().get(i);
+            Long applianceId = applianceIds.get(i);
+            Integer qty = quantities.get(i);
 
             Appliance appliance = applianceRepository.findById(applianceId)
-                    .orElseThrow(() -> new EntityNotFoundException("Appliance not found: " + applianceId));
+                    .orElseThrow(() -> new ApplianceNotFoundException(applianceId));
 
             OrderRow row = new OrderRow();
             row.setOrder(order);
@@ -244,9 +182,13 @@ public class OrderServiceImpl implements OrderService {
             row.setNumber(qty.longValue());
             row.setAmount(appliance.getPrice().multiply(BigDecimal.valueOf(qty)));
 
-            orderRowRepository.save(row);
+            orderRows.add(row);
         }
+
+        order.setOrderRowSet(orderRows);
+        ordersRepository.save(order);
     }
+
     @Override
     @Transactional
     public Orders createOrderFromCart(List<CartItem> items, Client client) {
@@ -260,17 +202,16 @@ public class OrderServiceImpl implements OrderService {
             OrderRow row = new OrderRow();
             row.setAppliance(item.getAppliance());
             row.setOrder(order);
-            row.setAmount(item.getAppliance().getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))); // 💥 вот это обязательно
+            row.setAmount(item.getAppliance().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
             row.setNumber((long) lineNumber++);
-
-
             rows.add(row);
         }
 
         order.setOrderRowSet(rows);
-
         return ordersRepository.save(order);
     }
+
+    @Override
     public Page<Orders> searchOrders(Long id, String clientName, Pageable pageable) {
         if (id != null) {
             return ordersRepository.findById(id)
@@ -283,5 +224,76 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return ordersRepository.findAll(pageable);
+    }
+
+    // Access + Auth utilities
+    private void checkAccess(Orders order) {
+        if (isEmployee()) return;
+
+        if (isClient()) {
+            String currentEmail = getCurrentUsername();
+            if (!order.getClient().getEmail().equals(currentEmail)) {
+                throw new UnauthorizedOrderAccessException();
+            }
+        }
+    }
+
+    private boolean isClient() {
+        return SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_CLIENT"));
+    }
+
+    public boolean isEmployee() {
+        return SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
+    }
+
+    private boolean isCurrentClient(Client orderClient) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return orderClient.getEmail().equals(email);
+    }
+
+    private String getCurrentUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    private Client getCurrentClient() {
+        String email = getCurrentUsername();
+        return clientRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Client not found with email: " + email));
+    }
+
+    private Employee getCurrentEmployee() {
+        String email = getCurrentUsername();
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Employee not found with email: " + email));
+    }
+    @Transactional
+    public void createOrderWithAppliances(OrderFormDto orderForm) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Client client = clientRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Client not found"));
+
+        Orders order = new Orders();
+        order.setClient(client);
+        order.setApproved(false);
+        order = ordersRepository.save(order);
+        for (int i = 0; i < orderForm.getApplianceIds().size(); i++) {
+            Long applianceId = orderForm.getApplianceIds().get(i);
+            Integer qty = orderForm.getQuantities().get(i);
+
+            Appliance appliance = applianceRepository.findById(applianceId)
+                    .orElseThrow(() -> new ApplianceNotFoundException(applianceId));
+
+            OrderRow row = new OrderRow();
+            row.setOrder(order);
+            row.setAppliance(appliance);
+            row.setNumber(qty.longValue());
+            row.setAmount(appliance.getPrice().multiply(BigDecimal.valueOf(qty)));
+
+            orderRowRepository.save(row);
+        }
     }
 }

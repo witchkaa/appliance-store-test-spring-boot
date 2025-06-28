@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error [[${status}]] - [[${error}]]</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f8f8;
+            color: #333;
+            text-align: center;
+            padding: 100px;
+        }
+        h1 {
+            font-size: 72px;
+            margin-bottom: 0;
+            color: #e74c3c;
+        }
+        h2 {
+            margin-top: 0;
+            font-weight: normal;
+            color: #555;
+        }
+        p {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #666;
+        }
+        a {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 12px 30px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #3498db;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+<h1 th:text="${status}">500</h1>
+<h2 th:text="${error}">Internal Server Error</h2>
+<p th:text="${message}">Something went wrong. Please try again later.</p>
+<a th:href="@{/}">Back to Home</a>
+</body>
+</html>

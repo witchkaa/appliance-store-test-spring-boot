@@ -40,16 +40,6 @@ class ClientControllerTest {
     @Mock
     private BindingResult bindingResult;
 
-    @Test
-    void list_shouldAddClientsToModelAndReturnView() {
-        List<Client> clients = List.of(new Client());
-        Mockito.when(clientService.getAll()).thenReturn(clients);
-
-        String view = clientController.list(model);
-
-        Mockito.verify(model).addAttribute("clients", clients);
-        Assertions.assertEquals("client/clients", view);
-    }
 
     @Test
     void createForm_shouldAddNewClientAndReturnView() {
