@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.model;
 
+import com.epam.rd.autocode.assessment.appliances.validator.ValidPassword;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -29,8 +30,8 @@ public abstract class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @ValidPassword
     @NotBlank(message = "{user.password.notblank}")
-    @Size(min = 6, message = "{user.password.size}")
     @Column(nullable = false)
     private String password;
 
