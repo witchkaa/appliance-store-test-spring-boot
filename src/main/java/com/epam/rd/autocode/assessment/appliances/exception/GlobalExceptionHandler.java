@@ -6,6 +6,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -111,7 +112,6 @@ public class GlobalExceptionHandler {
         return "error/error";
     }
 
-    // Простой метод для извлечения id из сообщения исключения (тут предполагается, что id числовой и в конце строки)
     private Long extractIdFromMessage(String message) {
         if (message == null) return null;
         try {
@@ -125,5 +125,14 @@ public class GlobalExceptionHandler {
             log.warn("Failed to extract id from exception message: {}", message);
         }
         return null;
+    }
+    @ExceptionHandler(AccessDeniedException.class)
+    public String handleAccessDenied(AccessDeniedException ex, Model model) {
+        log.warn("Access denied: {}", ex.getMessage());
+        String message = getLocalizedMessage("error.access.denied");
+        model.addAttribute("status", 403);
+        model.addAttribute("error", "Forbidden");
+        model.addAttribute("message", message);
+        return "error/error";
     }
 }

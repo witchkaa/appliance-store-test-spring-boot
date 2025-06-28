@@ -1,6 +1,7 @@
 package com.epam.rd.autocode.assessment.appliances.config;
 
 import com.epam.rd.autocode.assessment.appliances.service.CustomUserDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +45,13 @@ public class SecurityConfig {
                         .requestMatchers("/catalog", "/catalog/**").hasRole("CLIENT")
                         .requestMatchers("/cart", "/cart/**").hasRole("CLIENT")
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            request.setAttribute("message", "error.forbidden");
+                            request.getRequestDispatcher("/error/403").forward(request, response);
+                        })
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
