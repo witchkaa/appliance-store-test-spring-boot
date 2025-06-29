@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,4 +35,6 @@ public class Orders {
     private BigDecimal amount;
 
     private boolean paid;
+
+    private LocalDateTime orderDateTime;
 }

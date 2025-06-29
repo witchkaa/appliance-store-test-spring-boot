@@ -5,6 +5,10 @@
     <h5>Order #<span th:text="${order.id}">ID</span></h5>
     <p><strong>Client:</strong> <span th:text="${order.client != null ? order.client.name : '—'}"></span></p>
     <p><strong>Employee:</strong> <span th:text="${order.employee != null ? order.employee.name : '—'}"></span></p>
+    <p>
+        <strong th:text="#{orders.field.orderDateTime}">Order Date and Time:</strong>
+        <span th:text="${order.orderDateTime != null} ? ${#temporals.format(order.orderDateTime, 'dd MMMM yyyy, HH:mm:ss')} : '—'"></span>
+    </p>
 
     <table class="table table-sm table-bordered">
         <thead>
@@ -19,8 +23,8 @@
         <tr th:each="row : ${rows}">
             <td th:text="${row.appliance != null ? row.appliance.name : '—'}"></td>
             <td th:text="${row.number}"></td>
-            <td th:text="${#numbers.formatDecimal(row.appliance.price, 1, 'COMMA', 2, 'POINT')} + ' ₴'"></td>  <!-- Цена за 1 штуку -->
-            <td th:text="${#numbers.formatDecimal(row.amount, 1, 'COMMA', 2, 'POINT')} + ' ₴'"></td>            <!-- Сумма по позиции -->
+            <td th:text="${#numbers.formatDecimal(row.appliance.price, 1, 'COMMA', 2, 'POINT')} + ' ₴'"></td>
+            <td th:text="${#numbers.formatDecimal(row.amount, 1, 'COMMA', 2, 'POINT')} + ' ₴'"></td>
         </tr>
         </tbody>
     </table>

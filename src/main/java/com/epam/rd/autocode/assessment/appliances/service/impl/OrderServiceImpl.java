@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -189,7 +190,7 @@ public class OrderServiceImpl implements OrderService {
         Orders order = new Orders();
         order.setClient(client);
         order.setApproved(false);
-
+        order.setOrderDateTime(LocalDateTime.now());
         Set<OrderRow> rows = new HashSet<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
 
