@@ -11,7 +11,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Employee extends User {
-    @NotBlank(message = "{employee.department.notblank}")
-    @Size(min = 2, max = 100, message = "{employee.department.size}")
     private String department;
 }

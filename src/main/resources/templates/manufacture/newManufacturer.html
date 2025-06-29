@@ -16,6 +16,11 @@
         <label class="form-label" th:for="name" th:text="#{object.manufacturer.name}">Name</label>
         <input class="form-control" type="text" th:field="*{name}" id="name"/>
     </div>
+    <div class="mb-3">
+        <label class="form-label" th:for="name" th:text="#{object.manufacturer.name}">Name</label>
+        <input class="form-control" type="text" th:field="*{name}" id="name"/>
+        <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+    </div>
     <div class="btn-group">
         <button type="submit" class="btn btn-success" th:text="#{btn.submit}">Submit</button>
         <input type="reset" class="btn btn-secondary" th:value="#{btn.reset}"/>

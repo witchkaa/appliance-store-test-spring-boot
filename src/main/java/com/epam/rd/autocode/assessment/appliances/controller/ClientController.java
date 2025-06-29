@@ -1,11 +1,14 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import com.epam.rd.autocode.assessment.appliances.dto.ClientRequestDto;
+import com.epam.rd.autocode.assessment.appliances.dto.ClientResponseDto;
 import com.epam.rd.autocode.assessment.appliances.exception.ClientNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,13 +23,19 @@ import java.util.List;
 public class ClientController {
 
     private final ClientService clientService;
+    private final ModelMapper modelMapper;
 
     @GetMapping
     public String list(@RequestParam(required = false) Long id,
                        @RequestParam(required = false) String name,
                        Model model) {
         List<Client> clients = clientService.search(id, name);
-        model.addAttribute("clients", clients);
+
+        List<ClientResponseDto> dtos = clients.stream()
+                .map(client -> modelMapper.map(client, ClientResponseDto.class))
+                .toList();
+
+        model.addAttribute("clients", dtos);
         model.addAttribute("searchId", id);
         model.addAttribute("searchName", name);
         return "client/clients";
@@ -34,16 +43,18 @@ public class ClientController {
 
     @GetMapping("/add")
     public String createForm(Model model) {
-        model.addAttribute("client", new Client());
+        model.addAttribute("client", new ClientRequestDto());
         return "client/newClient";
     }
 
     @PostMapping("/add-client")
-    public String save(@ModelAttribute @Valid Client client,
+    public String save(@ModelAttribute("client") @Valid ClientRequestDto dto,
                        BindingResult result) {
         if (result.hasErrors()) {
             return "client/newClient";
         }
+
+        Client client = modelMapper.map(dto, Client.class);
         clientService.save(client);
         return "redirect:/clients";
     }
@@ -58,13 +69,14 @@ public class ClientController {
     public String editForm(@PathVariable Long id, Model model) {
         Client client = clientService.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException(id));
-        model.addAttribute("client", client);
+        ClientRequestDto dto = modelMapper.map(client, ClientRequestDto.class);
+        model.addAttribute("client", dto);
         return "client/editClient";
     }
 
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
-                         @ModelAttribute @Valid Client client,
+                         @ModelAttribute("client") @Valid ClientRequestDto dto,
                          BindingResult result) {
         if (result.hasErrors()) {
             return "client/editClient";
@@ -73,9 +85,11 @@ public class ClientController {
         Client existing = clientService.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException(id));
 
-        if (client.getPassword() == null || client.getPassword().isBlank()) {
-            client.setPassword(existing.getPassword());
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            dto.setPassword(existing.getPassword());
         }
+
+        Client client = modelMapper.map(dto, Client.class);
         client.setId(id);
         clientService.save(client);
         return "redirect:/clients";

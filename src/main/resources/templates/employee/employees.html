@@ -40,7 +40,6 @@
         <th th:text="#{object.user.id}">ID</th>
         <th th:text="#{object.user.name}">Name</th>
         <th th:text="#{object.user.email}">Email</th>
-        <th th:text="#{object.user.password}">Password</th>
         <th th:text="#{object.employee.department}">Department</th>
         <th>Operation</th>
     </tr>
@@ -50,7 +49,6 @@
         <td th:text="${employee.id}"></td>
         <td th:text="${employee.name}"></td>
         <td th:text="${employee.email}"></td>
-        <td th:text="${employee.password}"></td>
         <td th:text="${employee.department}"></td>
         <td>
             <a th:href="@{/employees/{id}/edit(id=${employee.id})}" class="btn btn-sm btn-warning" title="Edit">

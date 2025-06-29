@@ -18,7 +18,5 @@ public class Manufacturer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "{manufacturer.name.notblank}")
-    @Size(min = 2, max = 100, message = "{manufacturer.name.size}")
     private String name;
 }

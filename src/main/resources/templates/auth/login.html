@@ -9,7 +9,7 @@
 <body class="bg-light d-flex align-items-center justify-content-center vh-100">
 
 <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
-    <h3 class="mb-4 text-center text-primary">Login</h3>
+    <h3 class="mb-4 text-center text-primary" th:text="#{login.title}">Login</h3>
 
     <form th:action="@{/login}" method="post">
         <div class="mb-3">

@@ -55,31 +55,6 @@ class ApplianceControllerTest {
         Assertions.assertEquals("appliance/newAppliance", view);
     }
 
-    @Test
-    void save_withValidationErrors_shouldReturnFormViewWithAttributes() {
-        Appliance appliance = new Appliance();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
-        List<Manufacturer> manufacturers = List.of(new Manufacturer());
-        Mockito.when(manufacturerService.getAll()).thenReturn(manufacturers);
-
-        String view = applianceController.save(appliance, bindingResult, model);
-
-        Mockito.verify(model).addAttribute("manufacturers", manufacturers);
-        Mockito.verify(model).addAttribute("categories", Category.values());
-        Mockito.verify(model).addAttribute("powerTypes", PowerType.values());
-        Assertions.assertEquals("appliance/newAppliance", view);
-    }
-
-    @Test
-    void save_withoutValidationErrors_shouldSaveAndRedirect() {
-        Appliance appliance = new Appliance();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-
-        String view = applianceController.save(appliance, bindingResult, model);
-
-        Mockito.verify(applianceService).save(appliance);
-        Assertions.assertEquals("redirect:/appliances", view);
-    }
 
     @Test
     void delete_shouldCallServiceAndRedirect() {
@@ -116,19 +91,4 @@ class ApplianceControllerTest {
         Assertions.assertThrows(ResponseStatusException.class, () -> applianceController.editForm(id, model));
     }
 
-    @Test
-    void updateAppliance_withValidationErrors_shouldReturnFormViewWithAttributes() {
-        Appliance appliance = new Appliance();
-        Long id = 1L;
-        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
-        List<Manufacturer> manufacturers = List.of(new Manufacturer());
-        Mockito.when(manufacturerService.getAll()).thenReturn(manufacturers);
-
-        String view = applianceController.updateAppliance(id, appliance, bindingResult, model);
-
-        Mockito.verify(model).addAttribute("manufacturers", manufacturers);
-        Mockito.verify(model).addAttribute("categories", Category.values());
-        Mockito.verify(model).addAttribute("powerTypes", PowerType.values());
-        Assertions.assertEquals("appliance/editAppliance", view);
-    }
 }

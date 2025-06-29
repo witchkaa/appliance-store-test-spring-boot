@@ -40,10 +40,11 @@
         <!-- Manufacturer -->
         <div class="col-md-6">
             <label class="form-label" th:text="#{object.appliance.manufacturer}">Manufacturer</label>
-            <select th:field="*{manufacturer}" class="form-select">
+            <select th:field="*{manufacturerId}" class="form-select" required>
+                <option value="" disabled th:text="#{select.manufacturer.placeholder}">Select manufacturer</option>
                 <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.name}"></option>
             </select>
-            <div class="text-danger" th:if="${#fields.hasErrors('manufacturer')}" th:errors="*{manufacturer}"></div>
+            <div class="text-danger" th:if="${#fields.hasErrors('manufacturerId')}" th:errors="*{manufacturerId}"></div>
         </div>
 
         <!-- Power Type -->
@@ -82,12 +83,14 @@
             <input type="number" step="0.01" th:field="*{price}" class="form-control">
             <div class="text-danger" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
         </div>
+
         <!-- Quantity In Stock -->
         <div class="col-md-6">
             <label class="form-label" th:text="#{object.appliance.quantity}">Quantity in Stock</label>
             <input type="number" min="0" th:field="*{quantityInStock}" class="form-control"/>
             <div class="text-danger" th:if="${#fields.hasErrors('quantityInStock')}" th:errors="*{quantityInStock}"></div>
         </div>
+
         <!-- Type -->
         <div class="col-md-6">
             <label class="form-label" th:text="#{object.appliance.type}">Type</label>

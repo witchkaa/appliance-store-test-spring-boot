@@ -21,17 +21,11 @@ public abstract class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "{user.name.notblank}")
-    @Size(min = 2, max = 50, message = "{user.name.size}")
     private String name;
 
-    @NotBlank(message = "{user.email.notblank}")
-    @Email(message = "{user.email.valid}")
     @Column(unique = true, nullable = false)
     private String email;
 
-    @ValidPassword
-    @NotBlank(message = "{user.password.notblank}")
     @Column(nullable = false)
     private String password;
 
