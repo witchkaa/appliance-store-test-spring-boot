@@ -1,0 +1,33 @@
+:root {
+    --bs-body-bg: #f2f2f2;
+    --bs-body-color: #212529;
+    --bs-primary: #4CAF50;         /* Зелёный */
+    --bs-primary-rgb: 76, 175, 80;
+    --bs-secondary: #6c757d;       /* Серый */
+    --bs-light: #e0e0e0;
+    --bs-dark: #2e3b2e;
+}
+
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+    background-color: #388E3C;
+    border-color: #388E3C;
+}
+
+.navbar, .table-primary, .table-light thead {
+    background-color: var(--bs-secondary) !important;
+    color: #fff !important;
+}
+
+.table {
+    background-color: #f9f9f9;
+}
+
+body {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
