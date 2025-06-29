@@ -1,11 +1,15 @@
 package com.epam.rd.autocode.assessment.appliances.config;
 
+import com.epam.rd.autocode.assessment.appliances.auth.CustomAuthenticationProvider;
+import com.epam.rd.autocode.assessment.appliances.auth.LoginAttemptService;
 import com.epam.rd.autocode.assessment.appliances.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +19,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.Locale;
+
 
 @Configuration
 @EnableWebSecurity
@@ -23,12 +29,19 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
-
+    private final MessageSource messageSource;
+    @Bean
+    public CustomAuthenticationProvider customAuthenticationProvider() {
+        return new CustomAuthenticationProvider(userDetailsService, passwordEncoder(), loginAttemptService());
+    }
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
+    @Bean
+    public LoginAttemptService loginAttemptService() {
+        return new LoginAttemptService();
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -57,9 +70,21 @@ public class SecurityConfig {
                         })
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .permitAll()
-                )
+                    .loginPage("/login")
+                    .failureHandler((request, response, exception) -> {
+                        Locale locale = request.getLocale();
+                        String errorKey = "login.error.invalid";
+
+                        if (exception instanceof LockedException) {
+                            errorKey = "login.error.locked";
+                        }
+
+                        String errorMessage = messageSource.getMessage(errorKey, null, locale);
+                        request.getSession().setAttribute("loginErrorMessage", errorMessage);
+                        response.sendRedirect("/login?error");
+                })
+                .permitAll()
+        )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
@@ -74,6 +99,8 @@ public class SecurityConfig {
         AuthenticationManagerBuilder authBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         authBuilder.userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
+        authBuilder.authenticationProvider(customAuthenticationProvider());
         return authBuilder.build();
     }
+
 }

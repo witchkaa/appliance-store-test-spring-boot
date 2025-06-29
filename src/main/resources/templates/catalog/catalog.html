@@ -41,6 +41,9 @@
     <h2 class="mb-4 text-primary"><i class="bi bi-grid"></i> <span th:text="#{catalog.title}">Catalog</span></h2>
 
     <form method="get" class="mb-4" id="filterForm">
+        <div class="col-md-4">
+            <input type="text" class="form-control" name="name" th:value="${searchName}" placeholder=""/>
+        </div>
         <div class="row g-3">
             <div class="col-md-4">
                 <select name="type" class="form-select" id="typeSelect">

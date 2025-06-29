@@ -34,17 +34,22 @@ public class CatalogController {
     @PreAuthorize("hasRole('CLIENT')")
     @GetMapping
     public String catalog(@RequestParam(required = false) ProductType type,
+                          @RequestParam(required = false) String name,
                           @RequestParam(required = false, defaultValue = "price") String sort,
                           @RequestParam(required = false, defaultValue = "asc") String dir,
-                          @PageableDefault(size = 4) Pageable pageable,
+                          @PageableDefault(size = 3) Pageable pageable,
                           Model model) {
 
         Sort.Direction direction = dir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, sort));
 
-        Page<Appliance> appliancesPage = (type == null)
-                ? applianceService.getAll(sortedPageable)
-                : applianceService.getByType(type, sortedPageable);
+        Page<Appliance> appliancesPage;
+
+        if ((name != null && !name.isBlank()) || type != null) {
+            appliancesPage = applianceService.searchAppliances(null, name, null, sortedPageable);
+        } else {
+            appliancesPage = applianceService.getAll(sortedPageable);
+        }
 
         model.addAttribute("appliances", appliancesPage.getContent());
         model.addAttribute("page", appliancesPage);
@@ -52,6 +57,7 @@ public class CatalogController {
         model.addAttribute("selectedType", type);
         model.addAttribute("sort", sort);
         model.addAttribute("dir", dir);
+        model.addAttribute("searchName", name);
 
         return "catalog/catalog";
     }
