@@ -100,4 +100,53 @@ public class ClientServiceImpl implements ClientService {
     public boolean emailExists(String email) {
         return repository.findByEmail(email).isPresent();
     }
+    @Override
+    @Transactional
+    public void changePassword(String oldPassword, String newPassword) {
+        Client client = getCurrentClient();
+
+        if (oldPassword == null || oldPassword.isBlank()) {
+            throw new IllegalArgumentException("profile.password.old.required");
+        }
+
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new IllegalArgumentException("profile.password.new.required");
+        }
+
+        if (!passwordEncoder.matches(oldPassword, client.getPassword())) {
+            throw new IllegalArgumentException("profile.password.invalid");
+        }
+
+        if (newPassword.length() < 6) {
+            throw new IllegalArgumentException("profile.password.tooShort");
+        }
+
+        client.setPassword(passwordEncoder.encode(newPassword));
+        clientRepository.save(client);
+    }
+
+    @Override
+    @Transactional
+    public void changeEmail(String currentEmail, String newEmail) {
+        Client client = getCurrentClient();
+
+        if (currentEmail == null || !currentEmail.equalsIgnoreCase(client.getEmail())) {
+            throw new IllegalArgumentException("profile.email.mismatch");
+        }
+
+        if (newEmail == null || newEmail.isBlank()) {
+            throw new IllegalArgumentException("profile.email.required");
+        }
+
+        if (!newEmail.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new IllegalArgumentException("profile.email.invalidFormat");
+        }
+
+        if (emailExists(newEmail)) {
+            throw new IllegalArgumentException("profile.email.exists");
+        }
+
+        client.setEmail(newEmail);
+        clientRepository.save(client);
+    }
 }

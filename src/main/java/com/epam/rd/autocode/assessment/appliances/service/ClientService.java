@@ -21,4 +21,6 @@ public interface ClientService {
     boolean hasSufficientBalance(BigDecimal orderAmount);
     void deductBalance(BigDecimal orderAmount);
     boolean emailExists(String email);
+    void changePassword(String oldPassword, String newPassword);
+    void changeEmail(String currentEmail, String newEmail);
 }
