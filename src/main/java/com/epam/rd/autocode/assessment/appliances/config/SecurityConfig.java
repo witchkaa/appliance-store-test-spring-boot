@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/orders/**").hasAnyRole("EMPLOYEE", "CLIENT")
                         .requestMatchers("/catalog", "/catalog/**").hasRole("CLIENT")
                         .requestMatchers("/cart", "/cart/**").hasRole("CLIENT")
+                        .requestMatchers("/profile", "/profile/**").hasRole("CLIENT")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

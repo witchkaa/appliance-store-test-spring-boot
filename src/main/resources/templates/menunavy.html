@@ -27,6 +27,15 @@
                     <li class="nav-item" sec:authorize="hasRole('CLIENT')">
                         <a class="nav-link" th:href="@{/cart}" th:text="#{menu.cart}"></a>
                     </li>
+                    <li class="nav-item" sec:authorize="hasRole('CLIENT')">
+                        <a class="nav-link" th:href="@{/profile}" th:text="#{menu.profile}"></a>
+                    </li>
+                    <li class="nav-item" sec:authorize="hasRole('CLIENT')">
+                        <a class="nav-link" th:href="@{/catalog}" th:text="#{menu.catalog}"></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}" th:text="#{menu.logout}"></a>
+                    </li>
                 </ul>
             </div>
         </div>

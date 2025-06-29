@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
+<header th:insert="~{menunavy::navy}"></header>
 <div th:fragment="details">
     <h5>Order #<span th:text="${order.id}">ID</span></h5>
     <p><strong>Client:</strong> <span th:text="${order.client != null ? order.client.name : '—'}"></span></p>

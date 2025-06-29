@@ -8,6 +8,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.CartItemRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
 import com.epam.rd.autocode.assessment.appliances.service.CartService;
+import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -26,6 +28,7 @@ public class CartServiceImpl implements CartService {
     private final ApplianceService applianceService;
     private final OrderService orderService;
     private final ClientRepository clientRepository;
+    private final ClientService clientService;
 
     private Client getCurrentClient() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -79,13 +82,23 @@ public class CartServiceImpl implements CartService {
     }
     @Transactional
     public Orders checkout() {
-        Client client = getCurrentClient();
+        Client client = clientService.getCurrentClient();
         List<CartItem> items = cartItemRepository.findByClient(client);
+
         if (items.isEmpty()) {
-            throw new IllegalStateException("Корзина пуста");
+            throw new IllegalStateException("Cart is empty");
+        }
+
+        BigDecimal total = items.stream()
+                .map(item -> item.getAppliance().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (!clientService.hasSufficientBalance(total)) {
+            throw new IllegalStateException("Not enough balance to place the order");
         }
 
         Orders order = orderService.createOrderFromCart(items, client);
+        clientService.deductBalance(total);
 
         cartItemRepository.deleteAll(items);
 

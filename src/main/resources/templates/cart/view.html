@@ -58,7 +58,10 @@
         <a href="/catalog" class="btn btn-secondary mt-3" th:text="#{cart.backToCatalog}">Повернутися до каталогу</a>
     </div>
 </div>
-
+<div class="mt-5 text-center">
+    <a th:href="@{/cart(lang='en')}" class="me-2">🌍 English</a>
+    <a th:href="@{/cart(lang='uk')}">Українська</a>
+</div>
 <div th:insert="~{footer::footer}"></div>
 </body>
 </html>

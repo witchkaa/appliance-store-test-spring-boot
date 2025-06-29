@@ -168,4 +168,5 @@ public class OrdersController {
         model.addAttribute("amount", amount);
         return "order/orderDetails :: details";
     }
+
 }
