@@ -96,4 +96,8 @@ public class ClientServiceImpl implements ClientService {
         client.setBalance(client.getBalance().subtract(orderAmount));
         clientRepository.save(client);
     }
+    @Override
+    public boolean emailExists(String email) {
+        return repository.findByEmail(email).isPresent();
+    }
 }

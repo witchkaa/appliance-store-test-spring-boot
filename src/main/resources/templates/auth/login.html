@@ -35,13 +35,16 @@
     <div class="text-center mt-3">
         <a th:href="@{/reset}" class="text-decoration-none text-muted" th:text="#{login.forgot}">Forgot password?</a>
     </div>
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div class="text-center mt-3">
+        <a th:href="@{/register}" class="btn btn-link" th:text="#{login.register}">Register</a>
+    </div>
 </div>
 
 <div class="text-end mb-3">
     <a class="btn btn-outline-secondary btn-sm" th:href="@{/login(lang='en')}">English</a>
     <a class="btn btn-outline-secondary btn-sm" th:href="@{/login(lang='uk')}">Українська</a>
 </div>
-
 <script>
     document.getElementById('togglePassword').addEventListener('click', function () {
         const passwordInput = document.getElementById('password');

@@ -20,4 +20,5 @@ public interface ClientService {
     void topUpBalance(BigDecimal amount);
     boolean hasSufficientBalance(BigDecimal orderAmount);
     void deductBalance(BigDecimal orderAmount);
+    boolean emailExists(String email);
 }
