@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <div th:if="${param.error}" class="alert alert-danger" th:text="${session.loginErrorMessage}">Login error</div>
+        <div th:if="${param.error}" class="alert alert-danger" th:text="${loginErrorMessage}">Login error</div>
         <div th:if="${param.logout}" class="alert alert-info" th:text="#{login.logout}">Logged out successfully</div>
 
         <button type="submit" class="btn btn-primary w-100" th:text="#{login.button}">Log in</button>

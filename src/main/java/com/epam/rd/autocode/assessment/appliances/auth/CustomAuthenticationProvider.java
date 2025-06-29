@@ -25,7 +25,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String username = authentication.getName();
 
         if (loginAttemptService.isBlocked(username)) {
-            throw new LockedException("Account was blocked");
+            throw new LockedException("login.error.locked");
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -36,7 +36,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
         } else {
             loginAttemptService.loginFailed(username);
-            throw new BadCredentialsException("Incorrect login or password");
+            throw new BadCredentialsException("login.error.invalid");
         }
     }
 

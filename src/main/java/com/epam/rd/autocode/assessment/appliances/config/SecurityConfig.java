@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.config;
 
+import com.epam.rd.autocode.assessment.appliances.auth.CustomAuthenticationFailureHandler;
 import com.epam.rd.autocode.assessment.appliances.auth.CustomAuthenticationProvider;
 import com.epam.rd.autocode.assessment.appliances.auth.LoginAttemptService;
 import com.epam.rd.autocode.assessment.appliances.service.CustomUserDetailsService;
@@ -30,6 +31,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final MessageSource messageSource;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     @Bean
     public CustomAuthenticationProvider customAuthenticationProvider() {
         return new CustomAuthenticationProvider(userDetailsService, passwordEncoder(), loginAttemptService());
@@ -74,18 +76,7 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                     .loginPage("/login")
-                    .failureHandler((request, response, exception) -> {
-                        Locale locale = request.getLocale();
-                        String errorKey = "login.error.invalid";
-
-                        if (exception instanceof LockedException) {
-                            errorKey = "login.error.locked";
-                        }
-
-                        String errorMessage = messageSource.getMessage(errorKey, null, locale);
-                        request.getSession().setAttribute("loginErrorMessage", errorMessage);
-                        response.sendRedirect("/login?error");
-                })
+                    .failureHandler(customAuthenticationFailureHandler)
                 .permitAll()
         )
                 .logout(logout -> logout

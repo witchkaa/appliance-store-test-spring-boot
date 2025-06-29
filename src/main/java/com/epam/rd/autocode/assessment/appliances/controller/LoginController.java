@@ -12,6 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
@@ -22,7 +23,20 @@ public class LoginController {
     private final ClientService clientService;
     private final MessageSource messageSource;
     @GetMapping("/login")
-    public String loginPage() {
+    public String login(@RequestParam(value = "error", required = false) String error,
+                        @RequestParam(value = "lang", required = false) String lang,
+                        Model model, Locale locale) {
+
+        if (error != null) {
+
+            String errorMessageKey = (String) model.asMap().get("loginErrorMessage");
+            if (errorMessageKey == null) {
+                errorMessageKey = "login.error.invalid";
+            }
+            String errorMessage = messageSource.getMessage(errorMessageKey, null, locale);
+            model.addAttribute("loginErrorMessage", errorMessage);
+        }
+
         return "auth/login";
     }
     @GetMapping("/register")
