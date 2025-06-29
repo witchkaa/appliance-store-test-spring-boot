@@ -81,13 +81,24 @@ public class OrderServiceImpl implements OrderService {
     @PreAuthorize("@authService.isEmployee() || @authService.isOrderOwner(#id)")
     public void delete(Long id) {
         log.warn("Deleting order id {}", id);
+
         Orders order = getById(id);
         List<OrderRow> rows = orderRowRepository.findByOrder_Id(id);
+
         for (OrderRow row : rows) {
             Appliance appliance = row.getAppliance();
-            appliance.setQuantityInStock(appliance.getQuantityInStock() + row.getNumber().intValue());
+            appliance.setQuantityInStock((int) (appliance.getQuantityInStock() + row.getNumber()));
             applianceRepository.save(appliance);
         }
+
+        if (!order.getApproved() && order.getClient() != null) {
+            BigDecimal amountToReturn = order.getAmount();
+            Client client = order.getClient();
+            client.setBalance(client.getBalance().add(amountToReturn));
+            clientRepository.save(client);
+            log.info("Returned {} ₴ to client '{}', new balance: {}", amountToReturn, client.getName(), client.getBalance());
+        }
+
         ordersRepository.delete(order);
     }
 
@@ -312,5 +323,39 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return ordersRepository.save(order);
+    }
+    public Long deleteOrderRow(Long rowId) {
+        OrderRow row = orderRowRepository.findById(rowId)
+                .orElseThrow(() -> new RuntimeException("Order row not found"));
+
+        Long orderId = row.getOrder().getId();
+        orderRowRepository.delete(row);
+        return orderId;
+    }
+    @Transactional
+    public Long deleteOrderRowAndUpdateState(Long rowId) {
+        OrderRow row = orderRowRepository.findById(rowId)
+                .orElseThrow(() -> new RuntimeException("Order row not found"));
+
+        Orders order = row.getOrder();
+        Appliance appliance = row.getAppliance();
+        Client client = order.getClient();
+
+        int quantityToReturn = Math.toIntExact(row.getNumber());
+        appliance.setQuantityInStock(appliance.getQuantityInStock() + quantityToReturn);
+        applianceRepository.save(appliance);
+
+        BigDecimal rowAmount = row.getAmount();
+        order.setAmount(order.getAmount().subtract(rowAmount));
+
+        if ((!order.getApproved()) &&client != null) {
+            client.setBalance(client.getBalance().add(rowAmount));
+            clientRepository.save(client);
+        }
+
+        orderRowRepository.delete(row);
+        ordersRepository.save(order);
+
+        return order.getId();
     }
 }

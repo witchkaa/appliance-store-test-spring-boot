@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <title th:text="#{profile.title}">Profile - Your Orders and Balance</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 </head>
 <body>
 <div th:insert="~{menunavy::navy}"></div>
-<div th:if="${success}" class="alert alert-success" th:text="#{${success}}"></div>
-<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
 <div class="container mt-5">
     <h1>
         <span th:text="#{profile.welcome}">Welcome</span>, <span th:text="${client.name}">Client Name</span>!
@@ -19,6 +19,7 @@
         <p class="fs-4 text-success" th:text="${client.balance} + ' ₴'">0.00 ₴</p>
     </div>
 
+    <!-- Top up balance -->
     <form th:action="@{/profile/balance}" method="post" class="mb-5">
         <div class="mb-3">
             <label for="newBalance" class="form-label" th:text="#{profile.topup}">Top up your balance</label>
@@ -27,7 +28,8 @@
         </div>
         <button type="submit" class="btn btn-primary" th:text="#{profile.updateBalance}">Update Balance</button>
     </form>
-    <!-- Email Update Form -->
+
+    <!-- Email update -->
     <form th:action="@{/profile/change-email}" method="post" class="mb-4">
         <h4 th:text="#{profile.changeEmail}">Change Email</h4>
         <div class="mb-3">
@@ -41,7 +43,7 @@
         <button type="submit" class="btn btn-warning" th:text="#{profile.updateEmail}">Update Email</button>
     </form>
 
-    <!-- Password Update Form -->
+    <!-- Password update -->
     <form th:action="@{/profile/change-password}" method="post">
         <h4 th:text="#{profile.changePassword}">Change Password</h4>
         <div class="mb-3">
@@ -54,97 +56,91 @@
         </div>
         <button type="submit" class="btn btn-danger" th:text="#{profile.updatePassword}">Update Password</button>
     </form>
-    <h2 th:text="#{profile.orders}">Your Orders</h2>
+
+    <!-- Orders -->
+    <h2 class="mt-5" th:text="#{profile.orders}">Your Orders</h2>
+
     <div th:if="${#lists.isEmpty(orders)}">
         <p th:text="#{profile.noOrders}">You have no orders yet.</p>
         <a href="/catalog" class="btn btn-secondary" th:text="#{profile.goToCatalog}">Go to Catalog</a>
     </div>
 
     <div th:unless="${#lists.isEmpty(orders)}">
-        <table class="table table-bordered table-hover">
-            <thead class="table-light">
-            <tr>
-                <th th:text="#{order.id}">Order ID</th>
-                <th th:text="#{order.date}">Date</th>
-                <th th:text="#{order.amount}">Amount</th>
-                <th th:text="#{order.status}">Status</th>
-                <th th:text="#{order.details}">Details</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="order : ${orders}">
-                <td th:text="${order.id}">1</td>
-                <td th:text="${#temporals.format(order.orderDateTime, 'dd-MM-yyyy HH:mm')}">01-01-2025 12:00</td>
-                <td th:text="${order.amount} + ' ₴'">1000 ₴</td>
-                <td>
-                    <span th:if="${order.approved}" th:text="#{order.status.approved}">Approved</span>
-                    <span th:unless="${order.approved}" th:text="#{order.status.pending}">Pending</span>
-                </td>
-                <td>
-                    <a href="#" class="btn btn-sm btn-info view-order-details"
-                       th:attr="data-id=${order.id}" th:text="#{order.view}">
-                        View
-                    </a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th th:text="#{order.id}">Order ID</th>
+                    <th th:text="#{order.date}">Date</th>
+                    <th th:text="#{order.amount}">Amount</th>
+                    <th th:text="#{order.status}">Status</th>
+                    <th th:text="#{order.operations}">Actions</th>
+                    <th th:text="#{order.details}">Details</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="order : ${orders}">
+                    <td th:text="${order.id}">1</td>
+                    <td th:text="${#temporals.format(order.orderDateTime, 'dd-MM-yyyy HH:mm')}">01-01-2025 12:00</td>
+                    <td th:text="${order.amount} + ' ₴'">1000 ₴</td>
+                    <td>
+                        <span th:if="${order.approved}" th:text="#{order.status.approved}">Approved</span>
+                        <span th:unless="${order.approved}" th:text="#{order.status.pending}">Pending</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/orders/edit/{id}(id=${order.id})}" class="btn btn-sm btn-outline-primary me-2">
+                            <i class="bi bi-pencil-square"></i> <span th:text="#{order.edit}">Edit</span>
+                        </a>
+                        <a th:href="@{/orders/delete/{id}(id=${order.id})}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Are you sure you want to cancel this order?');">
+                            <i class="bi bi-trash3"></i> <span th:text="#{order.cancel}">Cancel</span>
+                        </a>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info"
+                                data-bs-toggle="modal"
+                                data-bs-target="#orderDetailsModal"
+                                th:onclick="'loadOrderDetails(' + ${order.id} + ')'">
+                            <i class="bi bi-eye"></i> <span th:text="#{order.view}">View</span>
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<div class="mt-5 text-center">
-    <a th:href="@{/profile(lang='en')}" class="me-2">🌍 English</a>
-    <a th:href="@{/profile(lang='uk')}">Українська</a>
-</div>
-<!-- Модальное окно -->
-<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+<!-- Modal window -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="orderDetailsModalLabel" th:text="#{order.details}">Order Details</h5>
+                <h5 class="modal-title" th:text="#{orders.details.header}">Order Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="orderDetailsContent">
-                <div class="text-center text-muted">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
+                <!-- AJAX content here -->
             </div>
         </div>
     </div>
 </div>
+
+<!-- Language Switch -->
+<div class="mt-5 text-center">
+    <a th:href="@{/profile(lang='en')}" class="me-2">🌍 English</a>
+    <a th:href="@{/profile(lang='uk')}">Українська</a>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.querySelectorAll('.view-order-details').forEach(button => {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            const orderId = this.getAttribute('data-id');
-
-            const modalBody = document.getElementById('orderDetailsContent');
-            modalBody.innerHTML = `
-          <div class="text-center text-muted">
-            <div class="spinner-border" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        `;
-
-            fetch('/orders/details/' + orderId)
-                .then(response => {
-                    if (!response.ok) throw new Error("Failed to load order details");
-                    return response.text();
-                })
-                .then(html => {
-                    modalBody.innerHTML = html;
-                    const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
-                    modal.show();
-                })
-                .catch(() => {
-                    modalBody.innerHTML = `<p class="text-danger">Error loading order details.</p>`;
-                });
-        });
-    });
+    function loadOrderDetails(orderId) {
+        fetch('/orders/details/' + orderId)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('orderDetailsContent').innerHTML = html;
+            });
+    }
 </script>
 </body>
 </html>

@@ -168,5 +168,16 @@ public class OrdersController {
         model.addAttribute("amount", amount);
         return "order/orderDetails :: details";
     }
-
+    @GetMapping("/delete-row/{rowId}")
+    public String deleteOrderRow(@PathVariable Long rowId, RedirectAttributes redirectAttributes) {
+        try {
+            Long orderId = ordersService.deleteOrderRowAndUpdateState(rowId);
+            redirectAttributes.addFlashAttribute("success", "Item removed, stock updated, and amount refunded.");
+            return "redirect:/orders/edit/" + orderId;
+        } catch (Exception e) {
+            log.error("Failed to delete order row {}", rowId, e);
+            redirectAttributes.addFlashAttribute("error", "Error deleting item: " + e.getMessage());
+            return "redirect:/orders";
+        }
+    }
 }

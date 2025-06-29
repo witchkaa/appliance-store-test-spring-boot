@@ -37,6 +37,7 @@
                 <th>Number</th>
                 <th>Price</th>
                 <th th:text="#{appliance.stock}">In Stock</th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -46,6 +47,13 @@
                 <td th:text="${row.number}"></td>
                 <td th:text="${row.amount}"></td>
                 <td th:text="${row.appliance.quantityInStock}"></td>
+                <td>
+                    <a th:href="@{/orders/delete-row/{rowId}(rowId=${row.id})}"
+                       class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Are you sure you want to remove this item from the order?')">
+                        <i class="bi bi-trash3"></i> Delete
+                    </a>
+                </td>
             </tr>
             </tbody>
         </table>

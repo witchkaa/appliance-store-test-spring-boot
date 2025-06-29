@@ -24,4 +24,6 @@ public interface OrderService {
     Page<Orders> searchOrders(Long id, String clientName, Pageable pageable);
     boolean isEmployee();
     Orders chargeClientForOrder(Orders order);
+    Long deleteOrderRow(Long rowId);
+    Long deleteOrderRowAndUpdateState(Long rowId);
 }
