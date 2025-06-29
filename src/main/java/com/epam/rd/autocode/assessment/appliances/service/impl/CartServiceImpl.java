@@ -43,23 +43,39 @@ public class CartServiceImpl implements CartService {
         return cartItemRepository.findByClient(client);
     }
 
+    @Transactional
     public void addToCart(Long applianceId, int quantity) {
         Client client = getCurrentClient();
         Appliance appliance = applianceService.findById(applianceId)
                 .orElseThrow(() -> new EntityNotFoundException("Appliance not found"));
 
+        if (appliance.getQuantityInStock() < quantity) {
+            throw new IllegalArgumentException("Appliance is out of stock");
+        }
+
         CartItem cartItem = cartItemRepository.findByClientAndAppliance(client, appliance)
                 .orElse(new CartItem(null, client, appliance, 0));
+
+        appliance.setQuantityInStock(appliance.getQuantityInStock() - quantity);
+        applianceService.save(appliance); // Или applianceRepository.save(appliance);
 
         cartItem.setQuantity(cartItem.getQuantity() + quantity);
         cartItemRepository.save(cartItem);
     }
+
     @Transactional
     public void removeFromCart(Long applianceId) {
         Client client = getCurrentClient();
         Appliance appliance = applianceService.findById(applianceId)
                 .orElseThrow(() -> new EntityNotFoundException("Appliance not found"));
-        cartItemRepository.deleteByClientAndAppliance(client, appliance);
+
+        CartItem cartItem = cartItemRepository.findByClientAndAppliance(client, appliance)
+                .orElseThrow(() -> new EntityNotFoundException("Cart item not found"));
+
+        appliance.setQuantityInStock(appliance.getQuantityInStock() + cartItem.getQuantity());
+        applianceService.save(appliance);
+
+        cartItemRepository.delete(cartItem);
     }
     @Transactional
     public Orders checkout() {

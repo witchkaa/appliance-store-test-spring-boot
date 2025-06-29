@@ -81,6 +81,12 @@ public class OrderServiceImpl implements OrderService {
     public void delete(Long id) {
         log.warn("Deleting order id {}", id);
         Orders order = getById(id);
+        List<OrderRow> rows = orderRowRepository.findByOrder_Id(id);
+        for (OrderRow row : rows) {
+            Appliance appliance = row.getAppliance();
+            appliance.setQuantityInStock(appliance.getQuantityInStock() + row.getNumber().intValue());
+            applianceRepository.save(appliance);
+        }
         ordersRepository.delete(order);
     }
 
@@ -162,6 +168,8 @@ public class OrderServiceImpl implements OrderService {
             Appliance appliance = applianceRepository.findById(applianceId)
                     .orElseThrow(() -> new ApplianceNotFoundException(applianceId));
 
+            applianceRepository.save(appliance);
+
             OrderRow row = new OrderRow();
             row.setOrder(order);
             row.setAppliance(appliance);
@@ -186,22 +194,25 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (CartItem item : items) {
+            Appliance appliance = item.getAppliance();
+            int qty = item.getQuantity();
+
             OrderRow row = new OrderRow();
-            row.setAppliance(item.getAppliance());
+            row.setAppliance(appliance);
             row.setOrder(order);
-            row.setNumber((long) item.getQuantity());
-            BigDecimal amount = item.getAppliance().getPrice()
-                    .multiply(BigDecimal.valueOf(item.getQuantity()));
+            row.setNumber((long) qty);
+
+            BigDecimal amount = appliance.getPrice().multiply(BigDecimal.valueOf(qty));
             row.setAmount(amount);
 
             totalAmount = totalAmount.add(amount);
-
             rows.add(row);
         }
 
         order.setOrderRowSet(rows);
         order.setAmount(totalAmount);
-        log.info("createOrderFromCart:" + totalAmount);
+
+        log.info("createOrderFromCart: {}", totalAmount);
         return ordersRepository.save(order);
     }
 
@@ -285,5 +296,20 @@ public class OrderServiceImpl implements OrderService {
 
             orderRowRepository.save(row);
         }
+    }
+    @Transactional
+    public Orders chargeClientForOrder(Orders order) {
+        Client client = order.getClient();
+        BigDecimal totalAmount = order.getAmount();
+
+        if (client.getBalance().compareTo(totalAmount) >= 0) {
+            client.setBalance(client.getBalance().subtract(totalAmount));
+            order.setPaid(true);
+            clientRepository.save(client);
+        } else {
+            order.setPaid(false);
+        }
+
+        return ordersRepository.save(order);
     }
 }

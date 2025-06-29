@@ -55,6 +55,7 @@
                     <th th:text="#{object.appliance.description}">Description</th>
                     <th th:text="#{object.appliance.power}">Power</th>
                     <th th:text="#{object.appliance.price}">Price</th>
+                    <th th:text="#{object.appliance.quantity}">Quantity</th>
                     <th th:text="#{object.appliance.type}">Type</th>
                     <th th:text="#{operation}">Operation</th>
                 </tr>
@@ -71,6 +72,7 @@
                     <td th:text="${appliance.description}"></td>
                     <td th:text="${appliance.power}"></td>
                     <td th:text="${appliance.price}"></td>
+                    <td th:text="${appliance.quantityInStock}"></td>
                     <td th:text="${appliance.type}"></td>
                     <td class="text-nowrap">
                         <a th:href="@{/appliances/{id}/edit(id=${appliance.id})}" class="btn btn-sm btn-warning">Edit</a>

@@ -12,7 +12,6 @@
     <h1 th:text="#{orders.btn.new}">New Order</h1>
 
     <form th:action="@{/orders/add-order}" method="post" id="orderForm">
-
         <div id="applianceRows">
             <div class="row mb-3 appliance-row">
                 <div class="col-md-8">
@@ -21,7 +20,7 @@
                         <option value="" disabled selected>Select appliance</option>
                         <option th:each="appliance : ${appliances}"
                                 th:value="${appliance.id}"
-                                th:text="${appliance.name}"></option>
+                                th:text="${appliance.name + ' (stock: ' + appliance.quantityInStock + ')'}"></option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -42,24 +41,24 @@
             const applianceRows = document.getElementById('applianceRows');
             applianceRows.addEventListener('click', e => {
                 if (e.target.classList.contains('btn-add-row')) {
+                    const selectHTML = applianceRows.querySelector('select').innerHTML;
                     const newRow = document.createElement('div');
                     newRow.classList.add('row', 'mb-3', 'appliance-row');
                     newRow.innerHTML = `
-                    <div class="col-md-8">
-                        <label>Appliance</label>
-                        <select name="applianceIds" class="form-select" required>
-                            <option value="" disabled selected>Select appliance</option>
-                            ${applianceRows.querySelector('select').innerHTML}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label>Quantity</label>
-                        <input type="number" name="quantities" class="form-control" min="1" value="1" required/>
-                    </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button type="button" class="btn btn-danger btn-remove-row">-</button>
-                    </div>
-                `;
+                        <div class="col-md-8">
+                            <label>Appliance</label>
+                            <select name="applianceIds" class="form-select" required>
+                                ${selectHTML}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Quantity</label>
+                            <input type="number" name="quantities" class="form-control" min="1" value="1" required/>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger btn-remove-row">-</button>
+                        </div>
+                    `;
                     applianceRows.appendChild(newRow);
                 }
                 if (e.target.classList.contains('btn-remove-row')) {

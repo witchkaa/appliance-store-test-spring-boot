@@ -50,7 +50,7 @@ public class ClientController {
 
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
-        clientService.delete(id); // выбросит ClientNotFoundException, если не найден
+        clientService.delete(id);
         return "redirect:/clients";
     }
 
@@ -74,7 +74,7 @@ public class ClientController {
                 .orElseThrow(() -> new ClientNotFoundException(id));
 
         if (client.getPassword() == null || client.getPassword().isBlank()) {
-            client.setPassword(existing.getPassword()); // сохраняем старый, если не ввели
+            client.setPassword(existing.getPassword());
         }
         client.setId(id);
         clientService.save(client);

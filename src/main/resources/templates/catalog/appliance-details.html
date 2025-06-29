@@ -63,6 +63,10 @@
             </div>
         </div>
         <div class="row mb-2">
+            <div class="col-sm-5 text-secondary" th:text="#{object.appliance.quantity}">Quantity in stock:</div>
+            <div class="col-sm-7 fw-medium" th:text="${appliance.quantityInStock}">5</div>
+        </div>
+        <div class="row mb-2">
             <div class="col-sm-5 text-secondary" th:text="#{details.description}">Description:</div>
             <div class="col-sm-7" th:text="${appliance.description}">A great appliance for daily use.</div>
         </div>
@@ -73,8 +77,13 @@
 
         <form method="post" th:action="@{/cart/add}">
             <input type="hidden" name="applianceId" th:value="${appliance.id}" />
-            <button type="submit" class="btn btn-primary w-100 mb-3">
-                <i class="bi bi-cart-plus"></i> <span th:text="#{details.addToCart}">Add to Cart</span>
+            <button type="submit"
+                    class="btn btn-primary w-100 mb-3"
+                    th:disabled="${appliance.quantityInStock == 0}">
+                <i class="bi bi-cart-plus"></i>
+                <span th:text="${appliance.quantityInStock == 0} ? #{details.outOfStock} : #{details.addToCart}">
+            Add to Cart
+        </span>
             </button>
         </form>
 

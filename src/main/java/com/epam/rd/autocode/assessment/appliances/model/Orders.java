@@ -32,4 +32,6 @@ public class Orders {
     private Boolean approved;
 
     private BigDecimal amount;
+
+    private boolean paid;
 }

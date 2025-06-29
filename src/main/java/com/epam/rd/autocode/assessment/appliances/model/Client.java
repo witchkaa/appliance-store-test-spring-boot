@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter
 @Setter
@@ -16,4 +18,5 @@ public class Client extends User {
     @Size(min = 9, max = 9, message = "{client.card.size}")
     @Pattern(regexp = "^\\d{4}-\\d{4}$", message = "{client.card.pattern}")
     private String card;
+    private BigDecimal balance = BigDecimal.ZERO;
 }

@@ -50,4 +50,7 @@ public class Appliance {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProductType type;
+
+    @NotNull(message = "{appliance.quantityInStock.notnull}")
+    private Integer quantityInStock;
 }

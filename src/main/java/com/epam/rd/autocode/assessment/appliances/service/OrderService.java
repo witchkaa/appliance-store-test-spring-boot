@@ -23,4 +23,5 @@ public interface OrderService {
     Orders createOrderFromCart(List<CartItem> cartItems, Client client);
     Page<Orders> searchOrders(Long id, String clientName, Pageable pageable);
     boolean isEmployee();
+    Orders chargeClientForOrder(Orders order);
 }

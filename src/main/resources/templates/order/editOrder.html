@@ -35,6 +35,7 @@
                 <th>Appliance</th>
                 <th>Number</th>
                 <th>Price</th>
+                <th th:text="#{appliance.stock}">In Stock</th>
             </tr>
             </thead>
             <tbody>
@@ -43,6 +44,7 @@
                 <td th:text="${row.appliance.name}"></td>
                 <td th:text="${row.number}"></td>
                 <td th:text="${row.amount}"></td>
+                <td th:text="${row.appliance.quantityInStock}"></td>
             </tr>
             </tbody>
         </table>

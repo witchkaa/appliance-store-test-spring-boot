@@ -47,9 +47,8 @@ public class CartController {
                                  RedirectAttributes redirectAttributes) {
         try {
             cartService.removeFromCart(applianceId);
-            redirectAttributes.addFlashAttribute("message", "Товар удалён из корзины");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Ошибка при удалении товара: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Couldn't remove: " + e.getMessage());
         }
         return "redirect:/cart";
     }
