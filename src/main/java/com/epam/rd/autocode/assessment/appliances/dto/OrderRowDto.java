@@ -1,19 +1,24 @@
 package com.epam.rd.autocode.assessment.appliances.dto;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
-public class OrderRowRequestDto {
+public class OrderRowDto {
 
     private Long id;
 
     @NotNull(message = "{orderRow.appliance.notnull}")
     private Long applianceId;
+
+    private String applianceName;
+
+    private BigDecimal appliancePrice;
 
     @NotNull(message = "{orderRow.number.notnull}")
     @Min(value = 1, message = "{orderRow.number.min}")

@@ -1,4 +1,4 @@
-package com.epam.rd.autocode.assessment.appliances.model;
+package com.epam.rd.autocode.assessment.appliances.dto;
 
 import lombok.Getter;
 import lombok.Setter;

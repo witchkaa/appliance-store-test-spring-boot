@@ -24,7 +24,6 @@ public class Orders {
     private Employee employee;
 
     @ManyToOne
-    @NotNull(message = "{orders.client.notnull}")
     private Client client;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)

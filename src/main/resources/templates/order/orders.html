@@ -46,8 +46,8 @@
             <tbody>
             <tr th:each="order : ${orders.content}">
                 <td th:text="${order.id}"></td>
-                <td th:text="${order.client != null ? order.client.name : '—'}"></td>
-                <td th:text="${order.employee != null ? order.employee.name : '—'}"></td>
+                <td th:text="${order.clientName != null ? order.clientName : '—'}"></td>
+                <td th:text="${order.employeeName != null ? order.employeeName : '—'}"></td>
                 <td>
                     <div th:if="${order.approved}">
                         <div sec:authorize="hasRole('EMPLOYEE')">
@@ -113,13 +113,6 @@
             </li>
         </ul>
     </nav>
-
-    <!-- Add button -->
-    <div sec:authorize="hasRole('CLIENT')" class="mt-3 text-end">
-        <a th:href="@{/orders/add}" class="btn btn-success">
-            <i class="bi bi-plus-circle"></i> <span th:text="#{orders.btn.new}">New Order</span>
-        </a>
-    </div>
 
     <!-- Language Switch -->
     <div class="mt-5 text-center">

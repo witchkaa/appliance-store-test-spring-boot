@@ -9,7 +9,6 @@
 </head>
 <body>
 <header th:insert="~{menunavy::navy}"></header>
-<div th:insert="~{menunavy::navy}"></div>
 <main class="container mt-4">
     <h1>Edit Order</h1>
 
@@ -20,12 +19,12 @@
         </div>
         <div class="mb-3">
             <label th:text="#{object.order.client}">Client</label>
-            <input type="text" th:value="*{client.name}" class="form-control" disabled/>
+            <input type="text" th:value="*{clientName}" class="form-control" disabled/>
         </div>
         <div class="mb-3">
             <label th:text="#{object.order.employee}">Employee</label>
             <input type="text"
-                   th:value="${order.employee != null ? order.employee.name : '—'}"
+                   th:value="*{employeeName != null ? employeeName : '—'}"
                    class="form-control"
                    disabled/>
         </div>
@@ -34,20 +33,24 @@
             <thead class="table-dark">
             <tr>
                 <th>ID</th>
-                <th>Appliance</th>
-                <th>Number</th>
-                <th>Price</th>
-                <th th:text="#{appliance.stock}">In Stock</th>
-                <th>Actions</th>
+                <th th:text="#{orderrow.appliance}">Appliance</th>
+                <th th:text="#{orderrow.quantity}">Number</th>
+                <th th:text="#{orderrow.price}">Price</th>
+                <th th:text="#{orderrow.amount}">Amount</th>
+                <th th:text="#{action.delete}">Actions</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="row : ${rows}">
                 <td th:text="${row.id}"></td>
-                <td th:text="${row.appliance.name}"></td>
-                <td th:text="${row.number}"></td>
-                <td th:text="${row.amount}"></td>
-                <td th:text="${row.appliance.quantityInStock}"></td>
+                <td>
+                    <a th:href="@{/catalog/appliances/{id}(id=${row.applianceId})}"
+                       class="text-decoration-none fw-semibold"
+                       th:text="${row.applianceName}">Appliance Name</a>
+                </td>
+                <td th:text="${row.number}">1</td>
+                <td th:text="${#numbers.formatDecimal(row.appliancePrice, 1, 'COMMA', 2, 'POINT')} + ' ₴'">100 ₴</td>
+                <td th:text="${#numbers.formatDecimal(row.amount, 1, 'COMMA', 2, 'POINT')} + ' ₴'">200 ₴</td>
                 <td>
                     <a th:href="@{/orders/delete-row/{rowId}(rowId=${row.id})}"
                        class="btn btn-sm btn-outline-danger"
@@ -59,8 +62,8 @@
             </tbody>
         </table>
 
-        <a th:href="@{/orders/choice-appliance/{ordersId}(ordersId=${order.id})}" class="btn btn-success">
-            Add Appliance <i class="fa fa-plus-square-o"></i>
+        <a th:href="@{/orders/choice-appliance/{ordersId}(ordersId=${order.id})}" class="btn btn-success mt-3">
+            <i class="bi bi-plus-circle"></i> Add Appliance
         </a>
     </div>
 </main>

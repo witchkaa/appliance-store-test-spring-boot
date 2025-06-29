@@ -23,18 +23,12 @@ public class OrderRow {
     private Long id;
 
     @ManyToOne
-    @NotNull(message = "{orderRow.appliance.notnull}")
     private Appliance appliance;
 
     @ManyToOne
-    @NotNull(message = "{orderRow.order.notnull}")
     private Orders order;
 
-    @NotNull(message = "{orderRow.number.notnull}")
-    @Min(value = 1, message = "{orderRow.number.min}")
     private Long number;
 
-    @NotNull(message = "{orderRow.amount.notnull}")
-    @DecimalMin(value = "0.01", message = "{orderRow.amount.min}")
     private BigDecimal amount;
 }

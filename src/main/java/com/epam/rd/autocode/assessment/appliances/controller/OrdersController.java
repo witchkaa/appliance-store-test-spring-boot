@@ -1,10 +1,13 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import com.epam.rd.autocode.assessment.appliances.dto.OrderRowDto;
+import com.epam.rd.autocode.assessment.appliances.dto.OrdersDto;
 import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
 import com.epam.rd.autocode.assessment.appliances.model.Orders;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -23,6 +26,7 @@ import java.util.List;
 public class OrdersController {
 
     private final OrderService ordersService;
+    private final ModelMapper modelMapper;
 
     @GetMapping
     public String list(@RequestParam(required = false) Long id,
@@ -43,14 +47,17 @@ public class OrdersController {
             ordersPage = ordersService.getAllPageable(pageable);
         }
 
-        model.addAttribute("orders", ordersPage);
+        Page<OrdersDto> dtoPage = ordersPage.map(order -> modelMapper.map(order, OrdersDto.class));
+
+        model.addAttribute("orders", dtoPage);
         return "order/orders";
     }
 
     @GetMapping("/add")
     public String createForm(Model model) {
         log.info("Opening order creation form");
-        model.addAttribute("order", new Orders());
+        // Передаём пустой DTO для формы
+        model.addAttribute("order", new OrdersDto());
         model.addAttribute("appliances", ordersService.getAvailableAppliances());
         return "order/newOrder";
     }
@@ -88,8 +95,15 @@ public class OrdersController {
     public String editForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             Orders order = ordersService.getById(id);
-            model.addAttribute("order", order);
-            model.addAttribute("rows", ordersService.getOrderRows(id));
+            OrdersDto orderDto = modelMapper.map(order, OrdersDto.class);
+
+            List<OrderRow> rows = ordersService.getOrderRows(id);
+            List<OrderRowDto> rowDtos = rows.stream()
+                    .map(row -> modelMapper.map(row, OrderRowDto.class))
+                    .toList();
+
+            model.addAttribute("order", orderDto);
+            model.addAttribute("rows", rowDtos);
             return "order/editOrder";
         } catch (Exception e) {
             log.error("Failed to open edit form for order {}", id, e);
@@ -162,12 +176,18 @@ public class OrdersController {
     public String orderDetails(@PathVariable Long id, Model model) {
         Orders order = ordersService.getById(id);
         List<OrderRow> rows = ordersService.getOrderRows(id);
-        model.addAttribute("order", order);
-        model.addAttribute("rows", rows);
-        BigDecimal amount = order.getAmount();
-        model.addAttribute("amount", amount);
+
+        OrdersDto orderDto = modelMapper.map(order, OrdersDto.class);
+        List<OrderRowDto> rowDtos = rows.stream()
+                .map(row -> modelMapper.map(row, OrderRowDto.class))
+                .toList();
+
+        model.addAttribute("order", orderDto);
+        model.addAttribute("rows", rowDtos);
+        model.addAttribute("amount", order.getAmount());
         return "order/orderDetails :: details";
     }
+
     @GetMapping("/delete-row/{rowId}")
     public String deleteOrderRow(@PathVariable Long rowId, RedirectAttributes redirectAttributes) {
         try {

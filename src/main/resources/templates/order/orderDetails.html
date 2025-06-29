@@ -11,10 +11,10 @@
             </h4>
 
             <p><strong>Client:</strong>
-                <span th:text="${order.client != null ? order.client.name : '—'}">—</span>
+                <span th:text="${order.clientName != null ? order.clientName : '—'}">—</span>
             </p>
             <p><strong>Employee:</strong>
-                <span th:text="${order.employee != null ? order.employee.name : '—'}">—</span>
+                <span th:text="${order.employeeName != null ? order.employeeName : '—'}">—</span>
             </p>
             <p>
                 <strong th:text="#{orders.field.orderDateTime}">Order Date and Time:</strong>
@@ -38,14 +38,14 @@
                 <tbody>
                 <tr th:each="row : ${rows}">
                     <td>
-                        <a th:if="${row.appliance != null}"
-                           th:href="@{/catalog/appliances/{id}(id=${row.appliance.id})}"
+                        <a th:if="${row.applianceName != null}"
+                           th:href="@{/catalog/appliances/{id}(id=${row.applianceId})}"
                            class="text-decoration-none text-dark fw-semibold"
-                           th:text="${row.appliance.name}">Appliance Name</a>
-                        <span th:unless="${row.appliance != null}">—</span>
+                           th:text="${row.applianceName}">Appliance Name</a>
+                        <span th:unless="${row.applianceName != null}">—</span>
                     </td>
                     <td th:text="${row.number}">1</td>
-                    <td th:text="${#numbers.formatDecimal(row.appliance.price, 1, 'COMMA', 2, 'POINT')} + ' ₴'">100 ₴</td>
+                    <td th:text="${#numbers.formatDecimal(row.appliancePrice, 1, 'COMMA', 2, 'POINT')} + ' ₴'">100 ₴</td>
                     <td th:text="${#numbers.formatDecimal(row.amount, 1, 'COMMA', 2, 'POINT')} + ' ₴'">200 ₴</td>
                 </tr>
                 </tbody>
