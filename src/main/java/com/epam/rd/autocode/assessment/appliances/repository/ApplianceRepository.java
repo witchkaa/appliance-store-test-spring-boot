@@ -10,6 +10,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApplianceRepository extends JpaRepository<Appliance, Long> {
     Page<Appliance> findAll(Pageable pageable);
+
     Page<Appliance> findByType(ProductType type, Pageable pageable);
+
     Page<Appliance> findByNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(String name, String manufacturer, Pageable pageable);
+
+    Page<Appliance> findByTypeAndNameContainingIgnoreCase(ProductType type, String name, Pageable pageable);
+
+    Page<Appliance> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    Page<Appliance> findByTypeAndNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
+            ProductType type, String name, String manufacturer, Pageable pageable);
+
+
 }

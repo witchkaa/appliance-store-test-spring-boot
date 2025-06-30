@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -171,7 +172,7 @@ public class OrdersController {
         }
         return "redirect:/orders/edit/" + ordersId;
     }
-
+    
     @GetMapping("/details/{id}")
     public String orderDetails(@PathVariable Long id, Model model) {
         Orders order = ordersService.getById(id);

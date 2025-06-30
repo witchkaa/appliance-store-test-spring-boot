@@ -14,4 +14,5 @@ public interface ApplianceService {
     Optional<Appliance> findById(Long id);
     Page<Appliance> getByType(ProductType type, Pageable pageable);
     Page<Appliance> searchAppliances(Long id, String name, String manufacturer, Pageable pageable);
+    Page<Appliance> searchAppliances(ProductType type, String name, String manufacturer, Pageable pageable);
 }

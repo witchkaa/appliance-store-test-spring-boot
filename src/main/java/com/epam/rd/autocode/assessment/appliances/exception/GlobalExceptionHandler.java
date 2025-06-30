@@ -5,12 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Locale;
 
@@ -29,10 +27,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApplianceNotFoundException.class)
     public String handleApplianceNotFound(ApplianceNotFoundException ex, Model model) {
         log.warn("Handled exception: {}", ex.getMessage());
-        // Парсим id из сообщения исключения (можно улучшить, если передавать id отдельно)
         Long id = extractIdFromMessage(ex.getMessage());
         String message = getLocalizedMessage("error.appliance.notfound", id);
-        model.addAttribute("status", 404);
+        model.addAttribute("status", HttpStatus.NOT_FOUND);
         model.addAttribute("error", "Not Found");
         model.addAttribute("message", message);
         return "error/error";
@@ -43,7 +40,7 @@ public class GlobalExceptionHandler {
         log.warn("Handled exception: {}", ex.getMessage());
         Long id = extractIdFromMessage(ex.getMessage());
         String message = getLocalizedMessage("error.client.notfound", id);
-        model.addAttribute("status", 404);
+        model.addAttribute("status", HttpStatus.NOT_FOUND);
         model.addAttribute("error", "Not Found");
         model.addAttribute("message", message);
         return "error/error";
@@ -54,7 +51,7 @@ public class GlobalExceptionHandler {
         log.warn("Handled exception: {}", ex.getMessage());
         Long id = extractIdFromMessage(ex.getMessage());
         String message = getLocalizedMessage("error.employee.notfound", id);
-        model.addAttribute("status", 404);
+        model.addAttribute("status", HttpStatus.NOT_FOUND);
         model.addAttribute("error", "Not Found");
         model.addAttribute("message", message);
         return "error/error";
@@ -65,7 +62,7 @@ public class GlobalExceptionHandler {
         log.warn("Manufacturer not found: {}", ex.getMessage());
         Long id = extractIdFromMessage(ex.getMessage());
         String message = getLocalizedMessage("error.manufacturer.notfound", id);
-        model.addAttribute("status", 404);
+        model.addAttribute("status", HttpStatus.NOT_FOUND);
         model.addAttribute("error", "Not Found");
         model.addAttribute("message", message);
         return "error/error";
@@ -75,7 +72,7 @@ public class GlobalExceptionHandler {
     public String handleManufacturerDeleteException(ManufacturerDeleteException ex, Model model) {
         log.warn("Manufacturer delete error: {}", ex.getMessage());
         String message = getLocalizedMessage("error.manufacturer.delete", ex.getMessage());
-        model.addAttribute("status", 400);
+        model.addAttribute("status", HttpStatus.BAD_REQUEST);
         model.addAttribute("error", "Bad Request");
         model.addAttribute("message", message);
         return "error/error";
@@ -86,7 +83,7 @@ public class GlobalExceptionHandler {
         log.warn("Order not found: {}", ex.getMessage());
         Long id = extractIdFromMessage(ex.getMessage());
         String message = getLocalizedMessage("error.order.notfound", id);
-        model.addAttribute("status", 404);
+        model.addAttribute("status", HttpStatus.NOT_FOUND);
         model.addAttribute("error", "Not Found");
         model.addAttribute("message", message);
         return "error/error";
@@ -96,7 +93,7 @@ public class GlobalExceptionHandler {
     public String handleUnauthorizedOrderAccess(UnauthorizedOrderAccessException ex, Model model) {
         log.warn("Unauthorized access: {}", ex.getMessage());
         String message = getLocalizedMessage("error.order.access");
-        model.addAttribute("status", 403);
+        model.addAttribute("status", HttpStatus.FORBIDDEN);
         model.addAttribute("error", "Forbidden");
         model.addAttribute("message", message);
         return "error/error";
@@ -106,7 +103,7 @@ public class GlobalExceptionHandler {
     public String handleGeneric(Exception ex, Model model) {
         log.error("Unhandled exception", ex);
         String message = getLocalizedMessage("error.generic");
-        model.addAttribute("status", 500);
+        model.addAttribute("status", HttpStatus.INTERNAL_SERVER_ERROR);
         model.addAttribute("error", "Internal Server Error");
         model.addAttribute("message", message);
         return "error/error";
@@ -130,7 +127,7 @@ public class GlobalExceptionHandler {
     public String handleAccessDenied(AccessDeniedException ex, Model model) {
         log.warn("Access denied: {}", ex.getMessage());
         String message = getLocalizedMessage("error.access.denied");
-        model.addAttribute("status", 403);
+        model.addAttribute("status", HttpStatus.FORBIDDEN);
         model.addAttribute("error", "Forbidden");
         model.addAttribute("message", message);
         return "error/error";

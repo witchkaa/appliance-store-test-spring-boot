@@ -67,4 +67,23 @@ public class ApplianceServiceImpl implements ApplianceService {
 
         return applianceRepository.findAll(pageable);
     }
+    @Override
+    public Page<Appliance> searchAppliances(ProductType type, String name, String manufacturer, Pageable pageable) {
+        if (type != null && (name != null && !name.isBlank()) && (manufacturer != null && !manufacturer.isBlank())) {
+            return applianceRepository.findByTypeAndNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
+                    type, name, manufacturer, pageable);
+        } else if (type != null && (name != null && !name.isBlank())) {
+            return applianceRepository.findByTypeAndNameContainingIgnoreCase(
+                    type, name, pageable);
+        } else if (type != null) {
+            return applianceRepository.findByType(type, pageable);
+        } else if ((name != null && !name.isBlank()) || (manufacturer != null && !manufacturer.isBlank())) {
+            return applianceRepository.findByNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
+                    name == null ? "" : name,
+                    manufacturer == null ? "" : manufacturer,
+                    pageable);
+        } else {
+            return applianceRepository.findAll(pageable);
+        }
+    }
 }

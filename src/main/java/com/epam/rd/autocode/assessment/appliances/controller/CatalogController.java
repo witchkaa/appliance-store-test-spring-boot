@@ -46,7 +46,7 @@ public class CatalogController {
         Page<Appliance> appliancesPage;
 
         if ((name != null && !name.isBlank()) || type != null) {
-            appliancesPage = applianceService.searchAppliances(null, name, null, sortedPageable);
+            appliancesPage = applianceService.searchAppliances(type, name, null, sortedPageable);
         } else {
             appliancesPage = applianceService.getAll(sortedPageable);
         }

@@ -11,6 +11,15 @@
 <div th:insert="~{menunavy::navy}"></div>
 
 <div class="container mt-5">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="#{${success}}">Success message</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="#{${error}}">Error message</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <h1>
         <span th:text="#{profile.welcome}">Welcome</span>, <span th:text="${client.name}">Client Name</span>!
     </h1>

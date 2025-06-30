@@ -40,7 +40,6 @@ public class ApplianceController {
 
         Page<Appliance> appliances = applianceService.searchAppliances(id, name, manufacturer, pageable);
 
-        // Мапим Page<Appliance> в Page<ApplianceResponseDto>
         Page<ApplianceResponseDto> dtos = appliances.map(appliance -> modelMapper.map(appliance, ApplianceResponseDto.class));
 
         model.addAttribute("appliances", dtos);
