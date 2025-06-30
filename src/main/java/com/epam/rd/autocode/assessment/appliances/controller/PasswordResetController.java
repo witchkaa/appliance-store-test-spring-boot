@@ -2,10 +2,7 @@ package com.epam.rd.autocode.assessment.appliances.controller;
 
 import com.epam.rd.autocode.assessment.appliances.dto.PasswordResetDto;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
-import com.epam.rd.autocode.assessment.appliances.model.Employee;
-import com.epam.rd.autocode.assessment.appliances.model.User;
 import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
-import com.epam.rd.autocode.assessment.appliances.repository.EmployeeRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +11,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
@@ -29,7 +29,6 @@ public class PasswordResetController {
 
     private final ClientRepository clientRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MessageSource messageSource;
 
     private final Map<String, String> pendingResetCodes = new ConcurrentHashMap<>();
 

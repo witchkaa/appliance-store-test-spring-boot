@@ -8,11 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class LoginAttemptService {
 
-    private final int MAX_ATTEMPT = 5;
-    private final long LOCK_TIME_DURATION = 15 * 60 * 1000;
-
-    private Map<String, Integer> attemptsCache = new ConcurrentHashMap<>();
-    private Map<String, Long> lockTimeCache = new ConcurrentHashMap<>();
+    private final Map<String, Integer> attemptsCache = new ConcurrentHashMap<>();
+    private final Map<String, Long> lockTimeCache = new ConcurrentHashMap<>();
 
     public void loginSucceeded(String key) {
         attemptsCache.remove(key);
@@ -24,6 +21,7 @@ public class LoginAttemptService {
         attempts++;
         attemptsCache.put(key, attempts);
 
+        int MAX_ATTEMPT = 5;
         if (attempts >= MAX_ATTEMPT) {
             lockTimeCache.put(key, System.currentTimeMillis());
         }
@@ -34,6 +32,7 @@ public class LoginAttemptService {
             return false;
         }
         long lockTime = lockTimeCache.get(key);
+        long LOCK_TIME_DURATION = 15 * 60 * 1000;
         if (System.currentTimeMillis() - lockTime > LOCK_TIME_DURATION) {
             lockTimeCache.remove(key);
             attemptsCache.remove(key);

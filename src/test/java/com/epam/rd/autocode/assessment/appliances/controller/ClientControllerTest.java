@@ -1,29 +1,27 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
-import com.epam.rd.autocode.assessment.appliances.model.*;
+import com.epam.rd.autocode.assessment.appliances.dto.ClientRequestDto;
+import com.epam.rd.autocode.assessment.appliances.dto.ClientResponseDto;
+import com.epam.rd.autocode.assessment.appliances.exception.ClientNotFoundException;
+import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
-import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
-import com.epam.rd.autocode.assessment.appliances.service.OrderService;
-import com.epam.rd.autocode.assessment.appliances.service.impl.ApplianceServiceImpl;
 import org.junit.jupiter.api.Test;
-import com.epam.rd.autocode.assessment.appliances.repository.*;
-
-import org.junit.jupiter.api.Assertions;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ClientControllerTest {
@@ -31,132 +29,130 @@ class ClientControllerTest {
     @Mock
     private ClientService clientService;
 
-    @InjectMocks
-    private ClientController clientController;
+    @Mock
+    private ModelMapper modelMapper;
 
     @Mock
     private Model model;
 
-    @Mock
-    private BindingResult bindingResult;
-
-
-    @Test
-    void createForm_shouldAddNewClientAndReturnView() {
-        String view = clientController.createForm(model);
-
-        Mockito.verify(model).addAttribute(eq("client"), any(Client.class));
-        Assertions.assertEquals("client/newClient", view);
-    }
+    @InjectMocks
+    private ClientController controller;
 
     @Test
-    void save_whenValidationErrors_shouldReturnFormView() {
+    void listShouldAddAttributesAndReturnView() {
+        Long id = 1L;
+        String name = "John";
+
         Client client = new Client();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
+        ClientResponseDto dto = new ClientResponseDto();
 
-        String view = clientController.save(client, bindingResult);
+        when(clientService.search(id, name)).thenReturn(List.of(client));
+        when(modelMapper.map(client, ClientResponseDto.class)).thenReturn(dto);
 
-        Assertions.assertEquals("client/newClient", view);
+        String view = controller.list(id, name, model);
+
+        verify(clientService).search(id, name);
+        verify(modelMapper).map(client, ClientResponseDto.class);
+        verify(model).addAttribute("clients", List.of(dto));
+        verify(model).addAttribute("searchId", id);
+        verify(model).addAttribute("searchName", name);
+
+        assertEquals("client/clients", view);
     }
 
     @Test
-    void save_whenNoValidationErrors_shouldSaveAndRedirect() {
-        Client client = new Client();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
+    void createFormShouldAddEmptyDtoAndReturnView() {
+        String view = controller.createForm(model);
 
-        String view = clientController.save(client, bindingResult);
-
-        Mockito.verify(clientService).save(client);
-        Assertions.assertEquals("redirect:/clients", view);
+        verify(model).addAttribute(eq("client"), any(ClientRequestDto.class));
+        assertEquals("client/newClient", view);
     }
 
     @Test
-    void delete_shouldCallServiceAndRedirect() {
-        Long id = 1L;
+    void saveWithValidationErrorsShouldReturnForm() {
+        ClientRequestDto dto = new ClientRequestDto();
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(true);
 
-        String view = clientController.delete(id);
+        String view = controller.save(dto, result);
 
-        Mockito.verify(clientService).delete(id);
-        Assertions.assertEquals("redirect:/clients", view);
+        verify(result).hasErrors();
+        verifyNoInteractions(clientService, modelMapper);
+        assertEquals("client/newClient", view);
     }
 
     @Test
-    void editForm_whenClientFound_shouldAddClientAndReturnView() {
-        Long id = 1L;
-        Client client = new Client();
-        Mockito.when(clientService.findById(id)).thenReturn(Optional.of(client));
-
-        String view = clientController.editForm(id, model);
-
-        Mockito.verify(model).addAttribute("client", client);
-        Assertions.assertEquals("client/editClient", view);
-    }
-
-    @Test
-    void editForm_whenClientNotFound_shouldThrowException() {
-        Long id = 1L;
-        Mockito.when(clientService.findById(id)).thenReturn(Optional.empty());
-
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> clientController.editForm(id, model));
-    }
-
-    @Test
-    void update_whenValidationErrors_shouldReturnFormView() {
-        Long id = 1L;
-        Client client = new Client();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
-
-        String view = clientController.update(id, client, bindingResult);
-
-        Assertions.assertEquals("client/editClient", view);
-    }
-
-    @Test
-    void update_whenNoValidationErrorsAndPasswordBlank_shouldKeepOldPasswordAndSave() {
-        Long id = 1L;
-        Client client = new Client();
-        client.setPassword("");
-        Client existing = new Client();
-        existing.setPassword("encodedPassword");
-
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-        Mockito.when(clientService.findById(id)).thenReturn(Optional.of(existing));
-
-        String view = clientController.update(id, client, bindingResult);
-
-        Assertions.assertEquals("redirect:/clients", view);
-        Assertions.assertEquals("encodedPassword", client.getPassword());
-        Mockito.verify(clientService).save(client);
-    }
-
-    @Test
-    void update_whenNoValidationErrorsAndPasswordSet_shouldSaveWithNewPassword() {
-        Long id = 1L;
-        Client client = new Client();
-        client.setPassword("newPassword");
-        Client existing = new Client();
-        existing.setPassword("oldPassword");
-
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-        Mockito.when(clientService.findById(id)).thenReturn(Optional.of(existing));
-
-        String view = clientController.update(id, client, bindingResult);
-
-        Assertions.assertEquals("redirect:/clients", view);
-        Assertions.assertEquals("newPassword", client.getPassword());
-        Mockito.verify(clientService).save(client);
-    }
-
-    @Test
-    void update_whenClientNotFound_shouldThrowException() {
-        Long id = 1L;
+    void saveValidDtoShouldSaveAndRedirect() {
+        ClientRequestDto dto = new ClientRequestDto();
         Client client = new Client();
 
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-        Mockito.when(clientService.findById(id)).thenReturn(Optional.empty());
+        when(modelMapper.map(dto, Client.class)).thenReturn(client);
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> clientController.update(id, client, bindingResult));
+        String view = controller.save(dto, result);
+
+        verify(clientService).save(client);
+        assertEquals("redirect:/clients", view);
+    }
+
+    @Test
+    void deleteShouldCallServiceAndRedirect() {
+        Long id = 42L;
+
+        String view = controller.delete(id);
+
+        verify(clientService).delete(id);
+        assertEquals("redirect:/clients", view);
+    }
+
+    @Test
+    void editFormShouldPopulateModelAndReturnView() {
+        Long id = 5L;
+        Client client = new Client();
+        ClientRequestDto dto = new ClientRequestDto();
+
+        when(clientService.findById(id)).thenReturn(Optional.of(client));
+        when(modelMapper.map(client, ClientRequestDto.class)).thenReturn(dto);
+
+        String view = controller.editForm(id, model);
+
+        verify(clientService).findById(id);
+        verify(modelMapper).map(client, ClientRequestDto.class);
+        verify(model).addAttribute("client", dto);
+
+        assertEquals("client/editClient", view);
+    }
+
+    @Test
+    void editFormClientNotFoundShouldThrowException() {
+        Long id = 10L;
+        when(clientService.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(ClientNotFoundException.class, () -> controller.editForm(id, model));
+    }
+
+    @Test
+    void updateWithValidationErrorsShouldReturnEditForm() {
+        Long id = 7L;
+        ClientRequestDto dto = new ClientRequestDto();
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(true);
+
+        String view = controller.update(id, dto, result);
+
+        verify(result).hasErrors();
+        assertEquals("client/editClient", view);
+    }
+
+    @Test
+    void updateClientNotFoundShouldThrowException() {
+        Long id = 999L;
+        ClientRequestDto dto = new ClientRequestDto();
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
+        when(clientService.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(ClientNotFoundException.class, () -> controller.update(id, dto, result));
     }
 }

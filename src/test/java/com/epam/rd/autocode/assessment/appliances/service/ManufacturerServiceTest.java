@@ -1,83 +1,138 @@
 package com.epam.rd.autocode.assessment.appliances.service;
 
+import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerDeleteException;
+import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
-import com.epam.rd.autocode.assessment.appliances.repository.*;
+import com.epam.rd.autocode.assessment.appliances.repository.ManufacturerRepository;
 import com.epam.rd.autocode.assessment.appliances.service.impl.ManufacturerServiceImpl;
-import org.junit.jupiter.api.Assertions;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.MessageSource;
 import org.springframework.dao.DataIntegrityViolationException;
-
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class ManufacturerServiceTest {
 
     @Mock
     private ManufacturerRepository manufacturerRepository;
 
+    @Mock
+    private MessageSource messageSource;
+
     @InjectMocks
     private ManufacturerServiceImpl manufacturerService;
 
     @Test
-    void getAll_shouldReturnListOfManufacturers() {
-        List<Manufacturer> manufacturers = List.of(new Manufacturer(), new Manufacturer());
-        Mockito.when(manufacturerRepository.findAll()).thenReturn(manufacturers);
+    void getAll_ShouldReturnList() {
+        List<Manufacturer> expected = List.of(new Manufacturer(), new Manufacturer());
+        when(manufacturerRepository.findAll()).thenReturn(expected);
 
         List<Manufacturer> result = manufacturerService.getAll();
 
-        Assertions.assertEquals(2, result.size());
-        Mockito.verify(manufacturerRepository).findAll();
+        assertEquals(2, result.size());
+        verify(manufacturerRepository).findAll();
     }
 
     @Test
-    void save_shouldSaveManufacturer() {
+    void save_ShouldReturnSavedManufacturer() {
         Manufacturer manufacturer = new Manufacturer();
-        Mockito.when(manufacturerRepository.save(manufacturer)).thenReturn(manufacturer);
+        when(manufacturerRepository.save(manufacturer)).thenReturn(manufacturer);
 
-        Manufacturer result = manufacturerService.save(manufacturer);
+        Manufacturer saved = manufacturerService.save(manufacturer);
 
-        Assertions.assertEquals(manufacturer, result);
-        Mockito.verify(manufacturerRepository).save(manufacturer);
+        assertEquals(manufacturer, saved);
+        verify(manufacturerRepository).save(manufacturer);
     }
 
     @Test
-    void delete_shouldCallRepositoryDeleteById() {
+    void delete_ShouldDeleteWhenExists() {
         Long id = 1L;
+        when(manufacturerRepository.existsById(id)).thenReturn(true);
 
         manufacturerService.delete(id);
 
-        Mockito.verify(manufacturerRepository).deleteById(id);
+        verify(manufacturerRepository).deleteById(id);
     }
 
     @Test
-    void delete_whenDataIntegrityViolationException_shouldThrowIllegalStateException() {
-        Long id = 1L;
-        Mockito.doThrow(DataIntegrityViolationException.class).when(manufacturerRepository).deleteById(id);
+    void delete_ShouldThrowNotFoundException_WhenNotExists() {
+        when(manufacturerRepository.existsById(1L)).thenReturn(false);
 
-        IllegalStateException exception = Assertions.assertThrows(IllegalStateException.class, () -> {
-            manufacturerService.delete(id);
-        });
-
-        Assertions.assertEquals("Cannot delete manufacturer with existing appliances.", exception.getMessage());
+        assertThrows(ManufacturerNotFoundException.class, () -> manufacturerService.delete(1L));
     }
 
     @Test
-    void findById_shouldReturnManufacturer() {
+    void delete_ShouldThrowDeleteException_WhenDataIntegrityViolation() {
         Long id = 1L;
+        when(manufacturerRepository.existsById(id)).thenReturn(true);
+        doThrow(DataIntegrityViolationException.class).when(manufacturerRepository).deleteById(id);
+        when(messageSource.getMessage(eq("error.manufacturer.delete"), any(), any())).thenReturn("Cannot delete");
+
+        ManufacturerDeleteException ex = assertThrows(
+                ManufacturerDeleteException.class,
+                () -> manufacturerService.delete(id)
+        );
+
+        assertEquals("Cannot delete", ex.getMessage());
+    }
+
+    @Test
+    void findById_ShouldReturnOptional() {
         Manufacturer manufacturer = new Manufacturer();
-        Mockito.when(manufacturerRepository.findById(id)).thenReturn(Optional.of(manufacturer));
+        when(manufacturerRepository.findById(1L)).thenReturn(Optional.of(manufacturer));
 
-        Optional<Manufacturer> result = manufacturerService.findById(id);
+        Optional<Manufacturer> result = manufacturerService.findById(1L);
 
-        Assertions.assertTrue(result.isPresent());
-        Assertions.assertEquals(manufacturer, result.get());
-        Mockito.verify(manufacturerRepository).findById(id);
+        assertTrue(result.isPresent());
+        assertEquals(manufacturer, result.get());
+    }
+
+    @Test
+    void search_ByIdFound_ShouldReturnOne() {
+        Manufacturer m = new Manufacturer();
+        when(manufacturerRepository.findById(5L)).thenReturn(Optional.of(m));
+
+        List<Manufacturer> result = manufacturerService.search(5L, null);
+
+        assertEquals(1, result.size());
+        assertEquals(m, result.get(0));
+    }
+
+    @Test
+    void search_ByIdNotFound_ShouldReturnEmptyList() {
+        when(manufacturerRepository.findById(5L)).thenReturn(Optional.empty());
+
+        List<Manufacturer> result = manufacturerService.search(5L, null);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void search_ByName_ShouldReturnFilteredList() {
+        List<Manufacturer> list = List.of(new Manufacturer());
+        when(manufacturerRepository.findByNameContainingIgnoreCase("Samsung")).thenReturn(list);
+
+        List<Manufacturer> result = manufacturerService.search(null, "Samsung");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void search_EmptyParams_ShouldReturnAll() {
+        List<Manufacturer> all = List.of(new Manufacturer());
+        when(manufacturerRepository.findAll()).thenReturn(all);
+
+        List<Manufacturer> result = manufacturerService.search(null, null);
+
+        assertEquals(1, result.size());
     }
 }

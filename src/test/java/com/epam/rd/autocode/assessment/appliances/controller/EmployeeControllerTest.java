@@ -1,32 +1,27 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
-import com.epam.rd.autocode.assessment.appliances.model.Appliance;
+import com.epam.rd.autocode.assessment.appliances.dto.EmployeeRequestDto;
+import com.epam.rd.autocode.assessment.appliances.dto.EmployeeResponseDto;
+import com.epam.rd.autocode.assessment.appliances.exception.EmployeeNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Employee;
-import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
-import com.epam.rd.autocode.assessment.appliances.model.Orders;
-import com.epam.rd.autocode.assessment.appliances.service.ClientService;
 import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
-import com.epam.rd.autocode.assessment.appliances.service.OrderService;
-import com.epam.rd.autocode.assessment.appliances.service.impl.ApplianceServiceImpl;
 import org.junit.jupiter.api.Test;
-import com.epam.rd.autocode.assessment.appliances.repository.*;
-
-import org.junit.jupiter.api.Assertions;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeControllerTest {
@@ -34,131 +29,183 @@ class EmployeeControllerTest {
     @Mock
     private EmployeeService employeeService;
 
-    @InjectMocks
-    private EmployeeController employeeController;
+    @Mock
+    private ModelMapper modelMapper;
 
     @Mock
     private Model model;
 
-    @Mock
-    private BindingResult bindingResult;
+    @InjectMocks
+    private EmployeeController controller;
 
     @Test
-    void createForm_shouldAddNewEmployeeAndReturnView() {
-        String view = employeeController.createForm(model);
-
-        Mockito.verify(model).addAttribute(eq("employee"), any(Employee.class));
-        Assertions.assertEquals("employee/newEmployee", view);
-    }
-
-    @Test
-    void save_whenValidationErrors_shouldReturnFormView() {
-        Employee employee = new Employee();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
-
-        String view = employeeController.save(employee, bindingResult);
-
-        Assertions.assertEquals("employee/newEmployee", view);
-    }
-
-    @Test
-    void save_whenNoValidationErrors_shouldSaveAndRedirect() {
-        Employee employee = new Employee();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-
-        String view = employeeController.save(employee, bindingResult);
-
-        Mockito.verify(employeeService).save(employee);
-        Assertions.assertEquals("redirect:/employees", view);
-    }
-
-    @Test
-    void delete_shouldCallServiceAndRedirect() {
+    void list_ShouldAddAttributesAndReturnView() {
         Long id = 1L;
+        String name = "Alice";
+        String department = "IT";
+        String sortBy = "name";
 
-        String view = employeeController.delete(id);
-
-        Mockito.verify(employeeService).delete(id);
-        Assertions.assertEquals("redirect:/employees", view);
-    }
-
-    @Test
-    void editForm_whenEmployeeFound_shouldAddEmployeeAndReturnView() {
-        Long id = 1L;
         Employee employee = new Employee();
-        Mockito.when(employeeService.findById(id)).thenReturn(Optional.of(employee));
+        EmployeeResponseDto dto = new EmployeeResponseDto();
 
-        String view = employeeController.editForm(id, model);
+        when(employeeService.searchAndSort(id, name, department, sortBy)).thenReturn(List.of(employee));
+        when(modelMapper.map(employee, EmployeeResponseDto.class)).thenReturn(dto);
 
-        Mockito.verify(model).addAttribute("employee", employee);
-        Assertions.assertEquals("employee/editEmployee", view);
+        String view = controller.list(id, name, department, sortBy, model);
+
+        verify(employeeService).searchAndSort(id, name, department, sortBy);
+        verify(modelMapper).map(employee, EmployeeResponseDto.class);
+        verify(model).addAttribute("employees", List.of(dto));
+        verify(model).addAttribute("currentSort", sortBy);
+        verify(model).addAttribute("searchId", id);
+        verify(model).addAttribute("searchName", name);
+        verify(model).addAttribute("searchDepartment", department);
+
+        assertEquals("employee/employees", view);
     }
 
     @Test
-    void editForm_whenEmployeeNotFound_shouldThrowException() {
-        Long id = 1L;
-        Mockito.when(employeeService.findById(id)).thenReturn(Optional.empty());
+    void createForm_ShouldAddEmptyDtoAndReturnView() {
+        String view = controller.createForm(model);
 
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> employeeController.editForm(id, model));
+        verify(model).addAttribute(eq("employee"), any(EmployeeRequestDto.class));
+        assertEquals("employee/newEmployee", view);
     }
 
     @Test
-    void update_whenValidationErrors_shouldReturnFormView() {
-        Long id = 1L;
+    void save_WithValidationErrors_ShouldReturnForm() {
+        EmployeeRequestDto dto = new EmployeeRequestDto();
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(true);
+
+        String view = controller.save(dto, result);
+
+        verify(result).hasErrors();
+        verifyNoInteractions(employeeService, modelMapper);
+        assertEquals("employee/newEmployee", view);
+    }
+
+    @Test
+    void save_ValidDto_ShouldSaveAndRedirect() {
+        EmployeeRequestDto dto = new EmployeeRequestDto();
         Employee employee = new Employee();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
 
-        String view = employeeController.update(id, employee, bindingResult);
+        when(modelMapper.map(dto, Employee.class)).thenReturn(employee);
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        Assertions.assertEquals("employee/editEmployee", view);
+        String view = controller.save(dto, result);
+
+        verify(employeeService).save(employee);
+        assertEquals("redirect:/employees", view);
     }
 
     @Test
-    void update_whenNoValidationErrorsAndPasswordBlank_shouldKeepOldPasswordAndSave() {
-        Long id = 1L;
-        Employee employee = new Employee();
-        employee.setPassword("");
-        Employee existing = new Employee();
-        existing.setPassword("encodedPassword");
+    void delete_ShouldCallServiceAndRedirect() {
+        Long id = 42L;
 
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-        Mockito.when(employeeService.findById(id)).thenReturn(Optional.of(existing));
+        String view = controller.delete(id);
 
-        String view = employeeController.update(id, employee, bindingResult);
-
-        Assertions.assertEquals("redirect:/employees", view);
-        Assertions.assertEquals("encodedPassword", employee.getPassword());
-        Mockito.verify(employeeService).save(employee);
+        verify(employeeService).delete(id);
+        assertEquals("redirect:/employees", view);
     }
 
     @Test
-    void update_whenNoValidationErrorsAndPasswordSet_shouldSaveWithNewPassword() {
-        Long id = 1L;
+    void editForm_ShouldPopulateModelAndReturnView() {
+        Long id = 5L;
         Employee employee = new Employee();
-        employee.setPassword("newPassword");
+        EmployeeRequestDto dto = new EmployeeRequestDto();
+
+        when(employeeService.findById(id)).thenReturn(Optional.of(employee));
+        when(modelMapper.map(employee, EmployeeRequestDto.class)).thenReturn(dto);
+
+        String view = controller.editForm(id, model);
+
+        verify(employeeService).findById(id);
+        verify(modelMapper).map(employee, EmployeeRequestDto.class);
+        verify(model).addAttribute("employee", dto);
+
+        assertEquals("employee/editEmployee", view);
+    }
+
+    @Test
+    void editForm_EmployeeNotFound_ShouldThrowException() {
+        Long id = 10L;
+        when(employeeService.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(EmployeeNotFoundException.class, () -> controller.editForm(id, model));
+    }
+
+    @Test
+    void update_WithValidationErrors_ShouldReturnEditForm() {
+        Long id = 7L;
+        EmployeeRequestDto dto = new EmployeeRequestDto();
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(true);
+
+        String view = controller.update(id, dto, result);
+
+        verify(result).hasErrors();
+        verifyNoInteractions(employeeService, modelMapper);
+        assertEquals("employee/editEmployee", view);
+    }
+
+    @Test
+    void update_ValidDto_PasswordBlank_ShouldKeepOldPassword() {
+        Long id = 3L;
+        EmployeeRequestDto dto = new EmployeeRequestDto();
+        dto.setPassword(" "); // blank password
+
         Employee existing = new Employee();
         existing.setPassword("oldPassword");
 
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-        Mockito.when(employeeService.findById(id)).thenReturn(Optional.of(existing));
+        when(employeeService.findById(id)).thenReturn(Optional.of(existing));
+        when(modelMapper.map(dto, Employee.class)).thenReturn(new Employee());
 
-        String view = employeeController.update(id, employee, bindingResult);
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        Assertions.assertEquals("redirect:/employees", view);
-        Assertions.assertEquals("newPassword", employee.getPassword());
-        Mockito.verify(employeeService).save(employee);
+        String view = controller.update(id, dto, result);
+
+        // Проверяем, что пароль обновился в dto на старый
+        assertEquals("oldPassword", dto.getPassword());
+
+        verify(employeeService).save(any(Employee.class));
+        assertEquals("redirect:/employees", view);
     }
 
     @Test
-    void update_whenEmployeeNotFound_shouldThrowException() {
-        Long id = 1L;
-        Employee employee = new Employee();
+    void update_ValidDto_ShouldSaveAndRedirect() {
+        Long id = 3L;
+        EmployeeRequestDto dto = new EmployeeRequestDto();
+        dto.setPassword("newPass");
 
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-        Mockito.when(employeeService.findById(id)).thenReturn(Optional.empty());
+        Employee existing = new Employee();
+        existing.setPassword("oldPassword");
 
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> employeeController.update(id, employee, bindingResult));
+        Employee employeeEntity = new Employee();
+
+        when(employeeService.findById(id)).thenReturn(Optional.of(existing));
+        when(modelMapper.map(dto, Employee.class)).thenReturn(employeeEntity);
+
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
+
+        String view = controller.update(id, dto, result);
+
+        verify(employeeService).save(employeeEntity);
+        assertEquals(id, employeeEntity.getId());
+        assertEquals("redirect:/employees", view);
+    }
+
+    @Test
+    void update_EmployeeNotFound_ShouldThrowException() {
+        Long id = 999L;
+        EmployeeRequestDto dto = new EmployeeRequestDto();
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
+        when(employeeService.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(EmployeeNotFoundException.class, () -> controller.update(id, dto, result));
     }
 }

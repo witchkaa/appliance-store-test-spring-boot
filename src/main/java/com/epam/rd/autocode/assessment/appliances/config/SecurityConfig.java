@@ -6,7 +6,6 @@ import com.epam.rd.autocode.assessment.appliances.auth.LoginAttemptService;
 import com.epam.rd.autocode.assessment.appliances.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,7 +27,6 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
-    private final MessageSource messageSource;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     @Bean
     public CustomAuthenticationProvider customAuthenticationProvider() {

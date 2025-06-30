@@ -1,38 +1,26 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
-import com.epam.rd.autocode.assessment.appliances.model.Appliance;
+
+import com.epam.rd.autocode.assessment.appliances.dto.ManufacturerRequestDto;
+import com.epam.rd.autocode.assessment.appliances.dto.ManufacturerResponseDto;
+import com.epam.rd.autocode.assessment.appliances.exception.ManufacturerDeleteException;
 import com.epam.rd.autocode.assessment.appliances.model.Manufacturer;
-import com.epam.rd.autocode.assessment.appliances.model.OrderRow;
-import com.epam.rd.autocode.assessment.appliances.model.Orders;
-import com.epam.rd.autocode.assessment.appliances.service.ClientService;
-import com.epam.rd.autocode.assessment.appliances.service.EmployeeService;
 import com.epam.rd.autocode.assessment.appliances.service.ManufacturerService;
-import com.epam.rd.autocode.assessment.appliances.service.OrderService;
-import com.epam.rd.autocode.assessment.appliances.service.impl.ApplianceServiceImpl;
 import org.junit.jupiter.api.Test;
-import com.epam.rd.autocode.assessment.appliances.repository.*;
-
-import org.junit.jupiter.api.Assertions;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.modelmapper.ModelMapper;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
-import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ManufacturerControllerTest {
@@ -40,69 +28,98 @@ class ManufacturerControllerTest {
     @Mock
     private ManufacturerService manufacturerService;
 
-    @InjectMocks
-    private ManufacturerController manufacturerController;
+    @Mock
+    private ModelMapper modelMapper;
 
     @Mock
     private Model model;
 
     @Mock
-    private BindingResult bindingResult;
-
-    @Mock
     private RedirectAttributes redirectAttributes;
 
+    @InjectMocks
+    private ManufacturerController controller;
 
     @Test
-    void createForm_shouldAddNewManufacturerAndReturnView() {
-        String view = manufacturerController.createForm(model);
-
-        Mockito.verify(model).addAttribute(eq("manufacturer"), any(Manufacturer.class));
-        Assertions.assertEquals("manufacture/newManufacturer", view);
-    }
-
-    @Test
-    void save_whenValidationErrors_shouldReturnFormView() {
-        Manufacturer manufacturer = new Manufacturer();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(true);
-
-        String view = manufacturerController.save(manufacturer, bindingResult);
-
-        Assertions.assertEquals("manufacture/newManufacturer", view);
-    }
-
-    @Test
-    void save_whenNoValidationErrors_shouldSaveAndRedirect() {
-        Manufacturer manufacturer = new Manufacturer();
-        Mockito.when(bindingResult.hasErrors()).thenReturn(false);
-
-        String view = manufacturerController.save(manufacturer, bindingResult);
-
-        Mockito.verify(manufacturerService).save(manufacturer);
-        Assertions.assertEquals("redirect:/manufacturers", view);
-    }
-
-    @Test
-    void delete_whenNoException_shouldAddSuccessFlashAndRedirect() {
+    void list_ShouldAddAttributesAndReturnView() {
         Long id = 1L;
+        String name = "Acme";
 
-        String view = manufacturerController.delete(id, redirectAttributes);
+        Manufacturer manufacturer = new Manufacturer();
+        ManufacturerResponseDto dto = new ManufacturerResponseDto();
 
-        Mockito.verify(manufacturerService).delete(id);
-        Mockito.verify(redirectAttributes).addFlashAttribute("success", "Manufacturer deleted successfully.");
-        Assertions.assertEquals("redirect:/manufacturers", view);
+        when(manufacturerService.search(id, name)).thenReturn(List.of(manufacturer));
+        when(modelMapper.map(manufacturer, ManufacturerResponseDto.class)).thenReturn(dto);
+
+        String view = controller.list(id, name, model);
+
+        verify(manufacturerService).search(id, name);
+        verify(modelMapper).map(manufacturer, ManufacturerResponseDto.class);
+        verify(model).addAttribute("manufacturers", List.of(dto));
+        verify(model).addAttribute("paramId", id);
+        verify(model).addAttribute("paramName", name);
+
+        assertEquals("manufacture/manufacturers", view);
     }
 
     @Test
-    void delete_whenIllegalStateException_shouldAddErrorFlashAndRedirect() {
-        Long id = 1L;
-        Mockito.doThrow(new IllegalStateException("Cannot delete manufacturer with existing appliances."))
-                .when(manufacturerService).delete(id);
+    void createForm_ShouldAddEmptyDtoAndReturnView() {
+        String view = controller.createForm(model);
 
-        String view = manufacturerController.delete(id, redirectAttributes);
+        verify(model).addAttribute(eq("manufacturer"), any(ManufacturerRequestDto.class));
+        assertEquals("manufacture/newManufacturer", view);
+    }
 
-        Mockito.verify(manufacturerService).delete(id);
-        Mockito.verify(redirectAttributes).addFlashAttribute("error", "Cannot delete manufacturer with existing appliances.");
-        Assertions.assertEquals("redirect:/manufacturers", view);
+    @Test
+    void save_WithValidationErrors_ShouldReturnForm() {
+        ManufacturerRequestDto dto = new ManufacturerRequestDto();
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(true);
+
+        String view = controller.save(dto, result);
+
+        verify(result).hasErrors();
+        verifyNoInteractions(manufacturerService, modelMapper);
+        assertEquals("manufacture/newManufacturer", view);
+    }
+
+    @Test
+    void save_ValidDto_ShouldSaveAndRedirect() {
+        ManufacturerRequestDto dto = new ManufacturerRequestDto();
+        Manufacturer manufacturer = new Manufacturer();
+
+        when(modelMapper.map(dto, Manufacturer.class)).thenReturn(manufacturer);
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
+
+        String view = controller.save(dto, result);
+
+        verify(manufacturerService).save(manufacturer);
+        assertEquals("redirect:/manufacturers", view);
+    }
+
+    @Test
+    void delete_Success_ShouldRedirectWithSuccessMessage() {
+        Long id = 10L;
+
+        String view = controller.delete(id, redirectAttributes);
+
+        verify(manufacturerService).delete(id);
+        verify(redirectAttributes).addFlashAttribute("success", "Manufacturer deleted successfully.");
+        assertEquals("redirect:/manufacturers", view);
+    }
+
+    @Test
+    void delete_ManufacturerDeleteException_ShouldRedirectWithErrorMessage() {
+        Long id = 10L;
+        String errorMessage = "Cannot delete manufacturer";
+
+        doThrow(new ManufacturerDeleteException(errorMessage)).when(manufacturerService).delete(id);
+
+        String view = controller.delete(id, redirectAttributes);
+
+        verify(manufacturerService).delete(id);
+        verify(redirectAttributes).addFlashAttribute("error", errorMessage);
+        assertEquals("redirect:/manufacturers", view);
     }
 }

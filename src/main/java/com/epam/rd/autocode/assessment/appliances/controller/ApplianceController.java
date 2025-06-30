@@ -66,7 +66,6 @@ public class ApplianceController {
             return "appliance/newAppliance";
         }
 
-        // Конвертация DTO в Entity
         Appliance appliance = convertToEntity(dto);
         applianceService.save(appliance);
         return "redirect:/appliances";
