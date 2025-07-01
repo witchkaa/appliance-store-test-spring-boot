@@ -37,26 +37,22 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<Orders> getAllPageable(Pageable pageable) {
         log.debug("Fetching orders with pageable: {}", pageable);
-
         if (isEmployee()) {
             return ordersRepository.findAll(pageable);
         } else if (isClient()) {
             return ordersRepository.findByClient_Email(getCurrentUsername(), pageable);
         }
-
         return Page.empty();
     }
 
     @Override
     public List<Orders> getAll() {
         log.debug("Fetching all orders");
-
         if (isEmployee()) {
             return ordersRepository.findAll();
         } else if (isClient()) {
             return ordersRepository.findByClient_Email(getCurrentUsername());
         }
-
         return Collections.emptyList();
     }
 
@@ -75,7 +71,9 @@ public class OrderServiceImpl implements OrderService {
             order.setClient(currentClient);
             order.setApproved(false);
         }
-        return ordersRepository.save(order);
+        Orders savedOrder = ordersRepository.save(order);
+        log.info("Order saved with id: {}", savedOrder.getId());
+        return savedOrder;
     }
 
     @Override
@@ -90,6 +88,7 @@ public class OrderServiceImpl implements OrderService {
             Appliance appliance = row.getAppliance();
             appliance.setQuantityInStock((int) (appliance.getQuantityInStock() + row.getNumber()));
             applianceRepository.save(appliance);
+            log.debug("Restocked appliance id {} by {}", appliance.getId(), row.getNumber());
         }
 
         if (!order.getApproved() && order.getClient() != null) {
@@ -101,6 +100,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         ordersRepository.delete(order);
+        log.info("Order id {} deleted", id);
     }
 
     @Override
@@ -119,6 +119,7 @@ public class OrderServiceImpl implements OrderService {
         order.setApproved(true);
         order.setEmployee(getCurrentEmployee());
         ordersRepository.save(order);
+        log.info("Order id {} approved", id);
     }
 
     @Secured("ROLE_EMPLOYEE")
@@ -129,6 +130,7 @@ public class OrderServiceImpl implements OrderService {
         order.setApproved(false);
         order.setEmployee(getCurrentEmployee());
         ordersRepository.save(order);
+        log.info("Order id {} unapproved", id);
     }
 
     @Override
@@ -167,6 +169,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void createOrderWithItems(List<Long> applianceIds, List<Integer> quantities) {
         Client client = getCurrentClient();
+        log.info("Creating order with items for client {}", client.getEmail());
 
         Orders order = new Orders();
         order.setClient(client);
@@ -194,11 +197,14 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderRowSet(orderRows);
         ordersRepository.save(order);
+        log.info("Order created for client {} with {} items", client.getEmail(), orderRows.size());
     }
 
     @Override
     @Transactional
     public Orders createOrderFromCart(List<CartItem> items, Client client) {
+        log.info("Creating order from cart for client {}", client.getEmail());
+
         Orders order = new Orders();
         order.setClient(client);
         order.setApproved(false);
@@ -225,12 +231,14 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderRowSet(rows);
         order.setAmount(totalAmount);
 
-        log.info("createOrderFromCart: {}", totalAmount);
+        log.info("Order total amount: {}", totalAmount);
         return ordersRepository.save(order);
     }
 
     @Override
     public Page<Orders> searchOrders(Long id, String clientName, Pageable pageable) {
+        log.debug("Searching orders with id: {}, clientName: {}", id, clientName);
+
         if (id != null) {
             return ordersRepository.findById(id)
                     .map(order -> new PageImpl<>(List.of(order), pageable, 1))
@@ -268,7 +276,6 @@ public class OrderServiceImpl implements OrderService {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"));
     }
 
-
     private String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
@@ -284,6 +291,7 @@ public class OrderServiceImpl implements OrderService {
         return employeeRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Employee not found with email: " + email));
     }
+
     @Transactional
     public void createOrderWithAppliances(OrderFormDto orderForm) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -294,6 +302,7 @@ public class OrderServiceImpl implements OrderService {
         order.setClient(client);
         order.setApproved(false);
         order = ordersRepository.save(order);
+
         for (int i = 0; i < orderForm.getApplianceIds().size(); i++) {
             Long applianceId = orderForm.getApplianceIds().get(i);
             Integer qty = orderForm.getQuantities().get(i);
@@ -309,32 +318,44 @@ public class OrderServiceImpl implements OrderService {
 
             orderRowRepository.save(row);
         }
+        log.info("Order with appliances created for client {}", client.getEmail());
     }
+
     @Transactional
     public Orders chargeClientForOrder(Orders order) {
         Client client = order.getClient();
         BigDecimal totalAmount = order.getAmount();
 
+        log.info("Charging client {} for order id {} with amount {}", client.getEmail(), order.getId(), totalAmount);
+
         if (client.getBalance().compareTo(totalAmount) >= 0) {
             client.setBalance(client.getBalance().subtract(totalAmount));
             order.setPaid(true);
             clientRepository.save(client);
+            log.info("Client {} charged successfully. New balance: {}", client.getEmail(), client.getBalance());
         } else {
             order.setPaid(false);
+            log.warn("Client {} has insufficient balance for order id {}", client.getEmail(), order.getId());
         }
 
         return ordersRepository.save(order);
     }
+
     public Long deleteOrderRow(Long rowId) {
+        log.info("Deleting order row with id {}", rowId);
         OrderRow row = orderRowRepository.findById(rowId)
                 .orElseThrow(() -> new RuntimeException("Order row not found"));
 
         Long orderId = row.getOrder().getId();
         orderRowRepository.delete(row);
+        log.info("Order row {} deleted", rowId);
         return orderId;
     }
+
     @Transactional
     public Long deleteOrderRowAndUpdateState(Long rowId) {
+        log.info("Deleting order row and updating state, rowId: {}", rowId);
+
         OrderRow row = orderRowRepository.findById(rowId)
                 .orElseThrow(() -> new RuntimeException("Order row not found"));
 
@@ -345,17 +366,17 @@ public class OrderServiceImpl implements OrderService {
         int quantityToReturn = Math.toIntExact(row.getNumber());
         appliance.setQuantityInStock(appliance.getQuantityInStock() + quantityToReturn);
         applianceRepository.save(appliance);
+        log.debug("Returned {} items to stock for appliance {}", quantityToReturn, appliance.getId());
 
-        BigDecimal rowAmount = row.getAmount();
-        order.setAmount(order.getAmount().subtract(rowAmount));
-
-        if ((!order.getApproved()) &&client != null) {
-            client.setBalance(client.getBalance().add(rowAmount));
+        BigDecimal refundAmount = row.getAmount();
+        if (!order.getApproved() && client != null) {
+            client.setBalance(client.getBalance().add(refundAmount));
             clientRepository.save(client);
+            log.info("Refunded {} ₴ to client {} for deleted order row", refundAmount, client.getEmail());
         }
 
         orderRowRepository.delete(row);
-        ordersRepository.save(order);
+        log.info("Order row {} deleted", rowId);
 
         return order.getId();
     }

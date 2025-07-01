@@ -24,66 +24,101 @@ public class ApplianceServiceImpl implements ApplianceService {
 
     @Override
     public Page<Appliance> getAll(Pageable pageable) {
-        return applianceRepository.findAll(pageable);
+        log.info("Fetching all appliances, page number: {}, page size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        Page<Appliance> result = applianceRepository.findAll(pageable);
+        log.debug("Fetched {} appliances", result.getNumberOfElements());
+        return result;
     }
 
     @Override
     public Appliance save(Appliance appliance) {
-        return applianceRepository.save(appliance);
+        log.info("Saving appliance: {}", appliance);
+        Appliance saved = applianceRepository.save(appliance);
+        log.info("Appliance saved with id: {}", saved.getId());
+        return saved;
     }
 
     @Override
     public void delete(Long id) {
+        log.info("Deleting appliance with id: {}", id);
         if (!applianceRepository.existsById(id)) {
+            log.warn("Appliance with id {} not found for deletion", id);
             throw new ApplianceNotFoundException(id);
         }
         applianceRepository.deleteById(id);
+        log.info("Appliance with id {} deleted successfully", id);
     }
 
     @Override
     public Optional<Appliance> findById(Long id) {
-        return applianceRepository.findById(id);
+        log.info("Finding appliance by id: {}", id);
+        Optional<Appliance> appliance = applianceRepository.findById(id);
+        if (appliance.isPresent()) {
+            log.debug("Appliance found: {}", appliance.get());
+        } else {
+            log.warn("Appliance with id {} not found", id);
+        }
+        return appliance;
     }
 
     @Override
     public Page<Appliance> getByType(ProductType type, Pageable pageable) {
-        return applianceRepository.findByType(type, pageable);
+        log.info("Fetching appliances by type: {}, page number: {}, page size: {}", type, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Appliance> result = applianceRepository.findByType(type, pageable);
+        log.debug("Fetched {} appliances of type {}", result.getNumberOfElements(), type);
+        return result;
     }
 
     @Override
     public Page<Appliance> searchAppliances(Long id, String name, String manufacturer, Pageable pageable) {
+        log.info("Searching appliances with id: {}, name: '{}', manufacturer: '{}', page: {}", id, name, manufacturer, pageable.getPageNumber());
         if (id != null) {
-            return applianceRepository.findById(id)
-                    .map(appliance -> new PageImpl<>(List.of(appliance), pageable, 1))
-                    .orElseGet(() -> new PageImpl<>(List.of(), pageable, 0));
+            Optional<Appliance> applianceOpt = applianceRepository.findById(id);
+            if (applianceOpt.isPresent()) {
+                log.debug("Appliance found by id: {}", id);
+                return new PageImpl<>(List.of(applianceOpt.get()), pageable, 1);
+            } else {
+                log.warn("No appliance found by id: {}", id);
+                return new PageImpl<>(List.of(), pageable, 0);
+            }
         }
         if ((name != null && !name.isBlank()) || (manufacturer != null && !manufacturer.isBlank())) {
-            return applianceRepository.findByNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
+            Page<Appliance> result = applianceRepository.findByNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
                     name == null ? "" : name,
                     manufacturer == null ? "" : manufacturer,
                     pageable
             );
+            log.debug("Found {} appliances by name/manufacturer", result.getNumberOfElements());
+            return result;
         }
-
-        return applianceRepository.findAll(pageable);
+        Page<Appliance> all = applianceRepository.findAll(pageable);
+        log.debug("Returning all appliances: count {}", all.getNumberOfElements());
+        return all;
     }
+
     @Override
     public Page<Appliance> searchAppliances(ProductType type, String name, String manufacturer, Pageable pageable) {
+        log.info("Searching appliances with type: {}, name: '{}', manufacturer: '{}', page: {}", type, name, manufacturer, pageable.getPageNumber());
+
+        Page<Appliance> result;
+
         if (type != null && (name != null && !name.isBlank()) && (manufacturer != null && !manufacturer.isBlank())) {
-            return applianceRepository.findByTypeAndNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
+            result = applianceRepository.findByTypeAndNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
                     type, name, manufacturer, pageable);
         } else if (type != null && (name != null && !name.isBlank())) {
-            return applianceRepository.findByTypeAndNameContainingIgnoreCase(
-                    type, name, pageable);
+            result = applianceRepository.findByTypeAndNameContainingIgnoreCase(type, name, pageable);
         } else if (type != null) {
-            return applianceRepository.findByType(type, pageable);
+            result = applianceRepository.findByType(type, pageable);
         } else if ((name != null && !name.isBlank()) || (manufacturer != null && !manufacturer.isBlank())) {
-            return applianceRepository.findByNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
+            result = applianceRepository.findByNameContainingIgnoreCaseAndManufacturer_NameContainingIgnoreCase(
                     name == null ? "" : name,
                     manufacturer == null ? "" : manufacturer,
                     pageable);
         } else {
-            return applianceRepository.findAll(pageable);
+            result = applianceRepository.findAll(pageable);
         }
+
+        log.debug("Found {} appliances matching criteria", result.getNumberOfElements());
+        return result;
     }
 }

@@ -28,27 +28,37 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public List<Manufacturer> getAll() {
-        return manufacturerRepository.findAll();
+        log.info("Fetching all manufacturers");
+        List<Manufacturer> manufacturers = manufacturerRepository.findAll();
+        log.debug("Found {} manufacturers", manufacturers.size());
+        return manufacturers;
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public Manufacturer save(Manufacturer manufacturer) {
-        return manufacturerRepository.save(manufacturer);
+        log.info("Saving manufacturer: {}", manufacturer);
+        Manufacturer saved = manufacturerRepository.save(manufacturer);
+        log.info("Manufacturer saved with id: {}", saved.getId());
+        return saved;
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public void delete(Long id) {
+        log.info("Deleting manufacturer with id: {}", id);
         if (!manufacturerRepository.existsById(id)) {
+            log.warn("Manufacturer with id {} not found for deletion", id);
             throw new ManufacturerNotFoundException(id);
         }
 
         try {
             manufacturerRepository.deleteById(id);
+            log.info("Manufacturer with id {} deleted", id);
         } catch (DataIntegrityViolationException e) {
             Locale locale = LocaleContextHolder.getLocale();
             String message = messageSource.getMessage("error.manufacturer.delete", null, locale);
+            log.error("Error deleting manufacturer with id {}: {}", id, message, e);
             throw new ManufacturerDeleteException(message);
         }
     }
@@ -56,20 +66,35 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public Optional<Manufacturer> findById(Long id) {
-        return manufacturerRepository.findById(id);
+        log.info("Finding manufacturer by id: {}", id);
+        Optional<Manufacturer> manufacturer = manufacturerRepository.findById(id);
+        if (manufacturer.isPresent()) {
+            log.debug("Manufacturer found: {}", manufacturer.get());
+        } else {
+            log.warn("Manufacturer with id {} not found", id);
+        }
+        return manufacturer;
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Override
     public List<Manufacturer> search(Long id, String name) {
+        log.info("Searching manufacturers with id: {}, name: {}", id, name);
+
         if (id != null) {
-            return manufacturerRepository.findById(id).map(List::of).orElse(List.of());
+            List<Manufacturer> list = manufacturerRepository.findById(id).map(List::of).orElse(List.of());
+            log.debug("Search by id result size: {}", list.size());
+            return list;
         }
 
         if (name != null && !name.isBlank()) {
-            return manufacturerRepository.findByNameContainingIgnoreCase(name);
+            List<Manufacturer> list = manufacturerRepository.findByNameContainingIgnoreCase(name);
+            log.debug("Search by name result size: {}", list.size());
+            return list;
         }
 
-        return manufacturerRepository.findAll();
+        List<Manufacturer> list = manufacturerRepository.findAll();
+        log.debug("Search with no filters result size: {}", list.size());
+        return list;
     }
 }
