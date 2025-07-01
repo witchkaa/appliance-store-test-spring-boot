@@ -3,6 +3,7 @@ package com.epam.rd.autocode.assessment.appliances.auth;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -16,14 +17,13 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
-        String errorKey = "login.error.invalid";
+        String errorCode = "invalid";
 
         if (exception instanceof LockedException) {
-            errorKey = "login.error.locked";
+            errorCode = "locked";
         }
 
-        request.getSession().setAttribute("loginErrorMessage", errorKey);
-        super.setDefaultFailureUrl("/login?error");
-        super.onAuthenticationFailure(request, response, exception);
+        String redirectUrl = "/login?error=" + errorCode;
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }

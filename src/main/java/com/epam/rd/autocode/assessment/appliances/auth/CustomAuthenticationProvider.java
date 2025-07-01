@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -28,18 +29,22 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new LockedException("login.error.locked");
         }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        String password = authentication.getCredentials().toString();
+        try {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            String password = authentication.getCredentials().toString();
 
-        if (passwordEncoder.matches(password, userDetails.getPassword())) {
-            loginAttemptService.loginSucceeded(username);
-            return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-        } else {
+            if (passwordEncoder.matches(password, userDetails.getPassword())) {
+                loginAttemptService.loginSucceeded(username);
+                return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
+            } else {
+                loginAttemptService.loginFailed(username);
+                throw new BadCredentialsException("login.error.invalid");
+            }
+        } catch (UsernameNotFoundException e) {
             loginAttemptService.loginFailed(username);
             throw new BadCredentialsException("login.error.invalid");
         }
     }
-
     @Override
     public boolean supports(Class<?> authentication) {
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);

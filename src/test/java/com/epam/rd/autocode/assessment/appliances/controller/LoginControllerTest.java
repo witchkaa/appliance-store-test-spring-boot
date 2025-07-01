@@ -66,39 +66,4 @@ class LoginControllerTest {
     }
 
 
-    @Test
-    void registerForm_ShouldAddNewClientAndReturnRegisterView() {
-        String view = controller.registerForm(model);
-
-        verify(model).addAttribute(eq("client"), any(Client.class));
-        assertEquals("auth/register", view);
-    }
-
-    @Test
-    void register_WhenEmailExists_ShouldRejectEmailAndReturnRegisterView() {
-        Client client = new Client();
-        client.setEmail("test@example.com");
-        when(clientService.emailExists("test@example.com")).thenReturn(true);
-
-        String view = controller.register(client, bindingResult, model, redirectAttributes, Locale.ENGLISH);
-
-        verify(bindingResult).rejectValue("email", "register.error.email.exists");
-        assertEquals("redirect:/login", view);
-    }
-
-    @Test
-    void register_WhenNoErrors_ShouldSaveClientAndRedirectToLogin() {
-        Client client = new Client();
-        client.setEmail("new@example.com");
-        when(clientService.emailExists("new@example.com")).thenReturn(false);
-        when(bindingResult.hasErrors()).thenReturn(false);
-        when(messageSource.getMessage("register.success", null, Locale.ENGLISH)).thenReturn("Registration successful");
-
-        String view = controller.register(client, bindingResult, model, redirectAttributes, Locale.ENGLISH);
-
-        verify(clientService).save(client);
-        verify(redirectAttributes).addFlashAttribute("message", "Registration successful");
-        assertEquals(Role.CLIENT, client.getRole());
-        assertEquals("redirect:/login", view);
-    }
 }

@@ -24,20 +24,18 @@ public class LoginController {
     private final ClientService clientService;
     private final MessageSource messageSource;
     @GetMapping("/login")
-    public String login(@RequestParam(value = "error", required = false) String error,
-                        @RequestParam(value = "lang", required = false) String lang,
+    public String login(@RequestParam(value = "error", required = false) String errorCode,
                         Model model, Locale locale) {
 
-        if (error != null) {
-
-            String errorMessageKey = (String) model.asMap().get("loginErrorMessage");
-            if (errorMessageKey == null) {
-                errorMessageKey = "login.error.invalid";
-            }
-            String errorMessage = messageSource.getMessage(errorMessageKey, null, locale);
-            model.addAttribute("loginErrorMessage", errorMessage);
+        if (errorCode != null) {
+            String key = switch (errorCode) {
+                case "locked" -> "login.error.locked";
+                case "invalid" -> "login.error.invalid";
+                default -> "login.error.invalid";
+            };
+            String message = messageSource.getMessage(key, null, locale);
+            model.addAttribute("loginErrorMessage", message);
         }
-
         return "auth/login";
     }
     @GetMapping("/register")
