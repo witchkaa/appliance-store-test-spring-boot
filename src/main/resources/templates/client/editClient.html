@@ -34,9 +34,14 @@
             <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
         </div>
 
-        <!-- Password -->
         <div class="col-md-6">
-            <label class="form-label" th:for="*{password}" th:text="#{object.user.password}">Password</label>
+            <label class="form-label" th:for="*{oldPassword}" th:text="#{object.user.oldPassword}">Old Password</label>
+            <input type="password" th:field="*{oldPassword}" class="form-control" placeholder=" " required>
+            <div class="text-danger" th:if="${#fields.hasErrors('oldPassword')}" th:errors="*{oldPassword}"></div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label" th:for="*{password}" th:text="#{object.user.newPassword}">New Password</label>
             <input type="password" th:field="*{password}" class="form-control" placeholder=" ">
             <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
         </div>

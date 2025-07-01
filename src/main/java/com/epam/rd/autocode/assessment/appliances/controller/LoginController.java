@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import com.epam.rd.autocode.assessment.appliances.dto.ClientRegistrationDto;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.Role;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
@@ -41,17 +42,18 @@ public class LoginController {
     }
     @GetMapping("/register")
     public String registerForm(Model model) {
-        model.addAttribute("client", new Client());
+        model.addAttribute("client", new ClientRegistrationDto());
         return "auth/register";
     }
 
     @PostMapping("/register")
-    public String register(@ModelAttribute("client") @Valid Client client,
+    public String register(@ModelAttribute("client") @Valid ClientRegistrationDto dto,
                            BindingResult result,
                            Model model,
                            RedirectAttributes redirectAttributes,
                            Locale locale) {
-        if (clientService.emailExists(client.getEmail())) {
+
+        if (clientService.emailExists(dto.getEmail())) {
             result.rejectValue("email", "register.error.email.exists");
         }
 
@@ -59,10 +61,17 @@ public class LoginController {
             return "auth/register";
         }
 
+        Client client = new Client();
+        client.setName(dto.getName());
+        client.setEmail(dto.getEmail());
+        client.setCard(dto.getCard());
         client.setRole(Role.CLIENT);
+        client.setPassword(dto.getPassword());
+
         clientService.save(client);
 
-        redirectAttributes.addFlashAttribute("message", messageSource.getMessage("register.success", null, locale));
+        redirectAttributes.addFlashAttribute("message",
+                messageSource.getMessage("register.success", null, locale));
         return "redirect:/login";
     }
 }

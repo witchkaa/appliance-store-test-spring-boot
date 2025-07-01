@@ -1,6 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
-import com.epam.rd.autocode.assessment.appliances.dto.ClientRequestDto;
+import com.epam.rd.autocode.assessment.appliances.dto.ClientRequestCreateDto;
 import com.epam.rd.autocode.assessment.appliances.dto.ClientResponseDto;
 import com.epam.rd.autocode.assessment.appliances.exception.ClientNotFoundException;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
@@ -64,13 +64,13 @@ class ClientControllerTest {
     void createFormShouldAddEmptyDtoAndReturnView() {
         String view = controller.createForm(model);
 
-        verify(model).addAttribute(eq("client"), any(ClientRequestDto.class));
+        verify(model).addAttribute(eq("client"), any(ClientRequestCreateDto.class));
         assertEquals("client/newClient", view);
     }
 
     @Test
     void saveWithValidationErrorsShouldReturnForm() {
-        ClientRequestDto dto = new ClientRequestDto();
+        ClientRequestCreateDto dto = new ClientRequestCreateDto();
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(true);
 
@@ -83,7 +83,7 @@ class ClientControllerTest {
 
     @Test
     void saveValidDtoShouldSaveAndRedirect() {
-        ClientRequestDto dto = new ClientRequestDto();
+        ClientRequestCreateDto dto = new ClientRequestCreateDto();
         Client client = new Client();
 
         when(modelMapper.map(dto, Client.class)).thenReturn(client);
@@ -110,15 +110,15 @@ class ClientControllerTest {
     void editFormShouldPopulateModelAndReturnView() {
         Long id = 5L;
         Client client = new Client();
-        ClientRequestDto dto = new ClientRequestDto();
+        ClientRequestCreateDto dto = new ClientRequestCreateDto();
 
         when(clientService.findById(id)).thenReturn(Optional.of(client));
-        when(modelMapper.map(client, ClientRequestDto.class)).thenReturn(dto);
+        when(modelMapper.map(client, ClientRequestCreateDto.class)).thenReturn(dto);
 
         String view = controller.editForm(id, model);
 
         verify(clientService).findById(id);
-        verify(modelMapper).map(client, ClientRequestDto.class);
+        verify(modelMapper).map(client, ClientRequestCreateDto.class);
         verify(model).addAttribute("client", dto);
 
         assertEquals("client/editClient", view);
@@ -135,7 +135,7 @@ class ClientControllerTest {
     @Test
     void updateWithValidationErrorsShouldReturnEditForm() {
         Long id = 7L;
-        ClientRequestDto dto = new ClientRequestDto();
+        ClientRequestCreateDto dto = new ClientRequestCreateDto();
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(true);
 
@@ -148,7 +148,7 @@ class ClientControllerTest {
     @Test
     void updateClientNotFoundShouldThrowException() {
         Long id = 999L;
-        ClientRequestDto dto = new ClientRequestDto();
+        ClientRequestCreateDto dto = new ClientRequestCreateDto();
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
         when(clientService.findById(id)).thenReturn(Optional.empty());

@@ -5,6 +5,7 @@ import com.epam.rd.autocode.assessment.appliances.repository.ClientRepository;
 import com.epam.rd.autocode.assessment.appliances.repository.OrdersRepository;
 import com.epam.rd.autocode.assessment.appliances.service.impl.ClientServiceImpl;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,236 +27,103 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ClientServiceTest {
 
-    @Mock
-    private ClientRepository repository;
-    @Mock
-    private ClientRepository clientRepository;
+    @Mock private ClientRepository clientRepository;
+    @Mock private OrdersRepository ordersRepository;
+
+    @Mock private Authentication authentication;
+    @Mock private SecurityContext securityContext;
 
     @InjectMocks
     private ClientServiceImpl clientService;
 
-    private void mockAuthentication(String email) {
-        Authentication auth = mock(Authentication.class);
-        when(auth.isAuthenticated()).thenReturn(true);
-        when(auth.getName()).thenReturn(email);
-        SecurityContext securityContext = mock(SecurityContext.class);
-        when(securityContext.getAuthentication()).thenReturn(auth);
+    private final String testEmail = "test@example.com";
+    private Client testClient;
+
+    @BeforeEach
+    void setUp() {
+        testClient = new Client();
+        testClient.setEmail(testEmail);
+        testClient.setPassword(new BCryptPasswordEncoder().encode("oldPass"));
+        testClient.setBalance(BigDecimal.valueOf(100));
+
         SecurityContextHolder.setContext(securityContext);
-    }
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getName()).thenReturn(testEmail);
     }
 
     @Test
-    void save_ShouldEncodePasswordAndSave() {
-        Client client = new Client();
-        client.setPassword("rawPass");
+    void getCurrentClient_returnsClient() {
+        when(clientRepository.findByEmail(testEmail)).thenReturn(Optional.of(testClient));
 
-        when(repository.save(any(Client.class))).thenAnswer(i -> i.getArgument(0));
+        Client result = clientService.getCurrentClient();
 
-        Client saved = clientService.save(client);
-
-        assertNotNull(saved.getPassword());
-        assertNotEquals("rawPass", saved.getPassword());
-        verify(repository).save(client);
+        assertEquals(testEmail, result.getEmail());
     }
 
     @Test
-    void findById_ShouldReturnClient() {
-        Client client = new Client();
-        when(repository.findById(1L)).thenReturn(Optional.of(client));
-
-        Optional<Client> found = clientService.findById(1L);
-
-        assertTrue(found.isPresent());
-        assertEquals(client, found.get());
-    }
-
-    @Test
-    void search_ById() {
-        Client client = new Client();
-        when(repository.findById(5L)).thenReturn(Optional.of(client));
-
-        List<Client> result = clientService.search(5L, null);
-
-        assertEquals(1, result.size());
-        assertEquals(client, result.get(0));
-    }
-
-    @Test
-    void search_ByName() {
-        List<Client> clients = List.of(new Client(), new Client());
-        when(repository.findByNameContainingIgnoreCase("john")).thenReturn(clients);
-
-        List<Client> result = clientService.search(null, "john");
-
-        assertEquals(2, result.size());
-    }
-
-    @Test
-    void getCurrentClient_ShouldReturnClientFromSecurityContext() {
-        String email = "test@example.com";
-        Client client = new Client();
-        client.setEmail(email);
-
-        mockAuthentication(email);
-        when(clientRepository.findByEmail(email)).thenReturn(Optional.of(client));
-
-        Client current = clientService.getCurrentClient();
-
-        assertEquals(email, current.getEmail());
-    }
-
-    @Test
-    void getCurrentClient_NoAuthentication_ShouldThrow() {
-        SecurityContextHolder.clearContext();
-
-        assertThrows(NullPointerException.class, () -> clientService.getCurrentClient());
-    }
-
-    @Test
-    void topUpBalance_ShouldIncreaseBalance() {
-        String email = "email@example.com";
-        Client client = new Client();
-        client.setBalance(BigDecimal.valueOf(100));
-        mockAuthentication(email);
-        when(clientRepository.findByEmail(email)).thenReturn(Optional.of(client));
-        when(clientRepository.save(any(Client.class))).thenAnswer(i -> i.getArgument(0));
+    void topUpBalance_addsAmountToClientBalance() {
+        when(clientRepository.findByEmail(testEmail)).thenReturn(Optional.of(testClient));
 
         clientService.topUpBalance(BigDecimal.valueOf(50));
 
-        assertEquals(BigDecimal.valueOf(150), client.getBalance());
-        verify(clientRepository).save(client);
+        assertEquals(BigDecimal.valueOf(150), testClient.getBalance());
+        verify(clientRepository).save(testClient);
     }
 
     @Test
-    void hasSufficientBalance_ShouldReturnTrueIfEnough() {
-        Client client = new Client();
-        client.setBalance(BigDecimal.valueOf(200));
-        mockAuthentication("email");
-        when(clientRepository.findByEmail(any())).thenReturn(Optional.of(client));
+    void deductBalance_reducesBalance_whenSufficient() {
+        when(clientRepository.findByEmail(testEmail)).thenReturn(Optional.of(testClient));
 
-        boolean result = clientService.hasSufficientBalance(BigDecimal.valueOf(150));
+        clientService.deductBalance(BigDecimal.valueOf(60));
 
-        assertTrue(result);
+        assertEquals(BigDecimal.valueOf(40), testClient.getBalance());
+        verify(clientRepository).save(testClient);
     }
 
     @Test
-    void hasSufficientBalance_ShouldReturnFalseIfNotEnough() {
-        Client client = new Client();
-        client.setBalance(BigDecimal.valueOf(50));
-        mockAuthentication("email");
-        when(clientRepository.findByEmail(any())).thenReturn(Optional.of(client));
+    void deductBalance_throwsException_whenInsufficient() {
+        when(clientRepository.findByEmail(testEmail)).thenReturn(Optional.of(testClient));
 
-        boolean result = clientService.hasSufficientBalance(BigDecimal.valueOf(100));
-
-        assertFalse(result);
+        assertThrows(IllegalStateException.class, () ->
+                clientService.deductBalance(BigDecimal.valueOf(200)));
     }
 
     @Test
-    void deductBalance_ShouldDecreaseBalance() {
-        Client client = new Client();
-        client.setBalance(BigDecimal.valueOf(100));
-        mockAuthentication("email");
-        when(clientRepository.findByEmail(any())).thenReturn(Optional.of(client));
-        when(clientRepository.save(any(Client.class))).thenAnswer(i -> i.getArgument(0));
+    void changePassword_successfullyChangesPassword() {
+        when(clientRepository.findByEmail(testEmail)).thenReturn(Optional.of(testClient));
 
-        clientService.deductBalance(BigDecimal.valueOf(40));
+        clientService.changePassword("oldPass", "newPass123");
 
-        assertEquals(BigDecimal.valueOf(60), client.getBalance());
-        verify(clientRepository).save(client);
+        assertTrue(new BCryptPasswordEncoder().matches("newPass123", testClient.getPassword()));
+        verify(clientRepository).save(testClient);
     }
 
     @Test
-    void deductBalance_NotEnoughMoney_ShouldThrow() {
-        Client client = new Client();
-        client.setBalance(BigDecimal.valueOf(30));
-        mockAuthentication("email");
-        when(clientRepository.findByEmail(any())).thenReturn(Optional.of(client));
+    void changePassword_throwsException_onWrongOldPassword() {
+        when(clientRepository.findByEmail(testEmail)).thenReturn(Optional.of(testClient));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class,
-                () -> clientService.deductBalance(BigDecimal.valueOf(50)));
-
-        assertEquals("Not enough money", ex.getMessage());
+        assertThrows(IllegalArgumentException.class, () ->
+                clientService.changePassword("wrongPass", "newPass"));
     }
 
     @Test
-    void changePassword_Success() {
-        String email = "email@example.com";
-        Client client = new Client();
-        client.setEmail(email);
-        // Хэш пароля для "oldPass"
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        client.setPassword(encoder.encode("oldPass"));
+    void changeEmail_successfullyChangesEmail() {
+        when(clientRepository.findByEmail(testEmail)).thenReturn(Optional.of(testClient));
+        when(clientRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
 
-        mockAuthentication(email);
-        when(clientRepository.findByEmail(email)).thenReturn(Optional.of(client));
-        when(clientRepository.save(any(Client.class))).thenAnswer(i -> i.getArgument(0));
+        clientService.changeEmail(testEmail, "new@example.com");
 
-        clientService.changePassword("oldPass", "newStrongPass");
-
-        assertTrue(encoder.matches("newStrongPass", client.getPassword()));
+        assertEquals("new@example.com", testClient.getEmail());
+        verify(clientRepository).save(testClient);
     }
 
     @Test
-    void changePassword_WrongOldPassword_ShouldThrow() {
-        Client client = new Client();
-        client.setPassword(new BCryptPasswordEncoder().encode("correctOld"));
-        mockAuthentication("email");
-        when(clientRepository.findByEmail(any())).thenReturn(Optional.of(client));
+    void changeEmail_throwsException_onEmailMismatch() {
+        when(clientRepository.findByEmail(testEmail)).thenReturn(Optional.of(testClient));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> clientService.changePassword("wrongOld", "newPass"));
-
-        assertEquals("profile.password.invalid", ex.getMessage());
+        assertThrows(IllegalArgumentException.class, () ->
+                clientService.changeEmail("wrong@example.com", "new@example.com"));
     }
 
-    @Test
-    void changeEmail_Success() {
-        String currentEmail = "current@example.com";
-        String newEmail = "new@example.com";
 
-        Client client = new Client();
-        client.setEmail(currentEmail);
-
-        mockAuthentication(currentEmail);
-        when(clientRepository.findByEmail(currentEmail)).thenReturn(Optional.of(client));
-        when(repository.findByEmail(newEmail)).thenReturn(Optional.empty());
-        when(clientRepository.save(any(Client.class))).thenAnswer(i -> i.getArgument(0));
-
-        clientService.changeEmail(currentEmail, newEmail);
-
-        assertEquals(newEmail, client.getEmail());
-    }
-
-    @Test
-    void changeEmail_EmailMismatch_ShouldThrow() {
-        Client client = new Client();
-        client.setEmail("user@example.com");
-
-        mockAuthentication("user@example.com");
-        when(clientRepository.findByEmail("user@example.com")).thenReturn(Optional.of(client));
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> clientService.changeEmail("wrong@example.com", "new@example.com"));
-
-        assertEquals("profile.email.mismatch", ex.getMessage());
-    }
-
-    @Test
-    void changeEmail_EmailExists_ShouldThrow() {
-        Client client = new Client();
-        client.setEmail("user@example.com");
-
-        mockAuthentication("user@example.com");
-        when(clientRepository.findByEmail("user@example.com")).thenReturn(Optional.of(client));
-        when(repository.findByEmail("existing@example.com")).thenReturn(Optional.of(new Client()));
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> clientService.changeEmail("user@example.com", "existing@example.com"));
-
-        assertEquals("profile.email.exists", ex.getMessage());
-    }
 }

@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Locale;
 
@@ -129,6 +130,15 @@ public class GlobalExceptionHandler {
         String message = getLocalizedMessage("error.access.denied");
         model.addAttribute("status", HttpStatus.FORBIDDEN);
         model.addAttribute("error", "Forbidden");
+        model.addAttribute("message", message);
+        return "error/error";
+    }
+    @ExceptionHandler(NoResourceFoundException.class)
+    public String handleNoResourceFound(NoResourceFoundException ex, Model model) {
+        log.warn("Access denied: {}", ex.getMessage());
+        String message = getLocalizedMessage("error.page.notfound");
+        model.addAttribute("status", HttpStatus.NOT_FOUND);
+        model.addAttribute("error", "Not Found");
         model.addAttribute("message", message);
         return "error/error";
     }

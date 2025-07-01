@@ -33,7 +33,6 @@
         <th th:text="#{object.user.id}"></th>
         <th th:text="#{object.user.name}"></th>
         <th th:text="#{object.user.email}"></th>
-        <th th:text="#{object.user.password}"></th>
         <th th:text="#{object.client.card}"></th>
         <th >Operation</th>
     </tr>
@@ -43,7 +42,6 @@
         <td th:text="${client.id}"/>
         <td th:text="${client.name}"/>
         <td th:text="${client.email}"/>
-        <td th:text="${client.password}"/>
         <td th:text="${client.card}"/>
         <td>
             <a th:href="@{'/clients/' + ${client.id} + '/edit'}" class="btn btn-sm btn-warning" title="Edit">

@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class ClientRequestDto {
+public class ClientRequestCreateDto {
     private Long id;
     @NotBlank(message = "{user.name.notblank}")
     @Size(min = 2, max = 50, message = "{user.name.size}")
@@ -29,4 +29,6 @@ public class ClientRequestDto {
     private String card;
 
     private BigDecimal balance;
+    @NotBlank(message = "{validation.oldPassword.required}")
+    private String oldPassword;
 }
