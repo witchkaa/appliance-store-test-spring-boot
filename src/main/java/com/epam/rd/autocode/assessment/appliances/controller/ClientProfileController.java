@@ -56,10 +56,7 @@ public class ClientProfileController {
     public String changePassword(@Valid @ModelAttribute PasswordChangeRequest request,
                                  BindingResult result,
                                  RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
-            return "redirect:/profile";
-        }
+//
 
         try {
             clientService.changePassword(request.getOldPassword(), request.getNewPassword());

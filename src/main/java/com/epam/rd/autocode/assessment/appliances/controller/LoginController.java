@@ -68,8 +68,7 @@ public class LoginController {
 
         clientService.save(client);
 
-        redirectAttributes.addFlashAttribute("message",
-                messageSource.getMessage("register.success", null, locale));
+        redirectAttributes.addFlashAttribute("message", "register.success");
         return "redirect:/login";
     }
 }

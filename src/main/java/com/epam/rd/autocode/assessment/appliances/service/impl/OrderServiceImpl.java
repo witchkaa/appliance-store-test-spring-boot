@@ -7,6 +7,7 @@ import com.epam.rd.autocode.assessment.appliances.exception.UnauthorizedOrderAcc
 import com.epam.rd.autocode.assessment.appliances.model.*;
 import com.epam.rd.autocode.assessment.appliances.repository.*;
 import com.epam.rd.autocode.assessment.appliances.service.OrderService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -353,31 +354,48 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Transactional
+    @Override
     public Long deleteOrderRowAndUpdateState(Long rowId) {
         log.info("Deleting order row and updating state, rowId: {}", rowId);
 
         OrderRow row = orderRowRepository.findById(rowId)
-                .orElseThrow(() -> new RuntimeException("Order row not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Order row not found"));
 
         Orders order = row.getOrder();
+        Long orderId = order.getId();
+
         Appliance appliance = row.getAppliance();
-        Client client = order.getClient();
-
-        int quantityToReturn = Math.toIntExact(row.getNumber());
-        appliance.setQuantityInStock(appliance.getQuantityInStock() + quantityToReturn);
+        appliance.setQuantityInStock((int) (appliance.getQuantityInStock() + row.getNumber()));
         applianceRepository.save(appliance);
-        log.debug("Returned {} items to stock for appliance {}", quantityToReturn, appliance.getId());
+        log.debug("Returned {} items to stock for appliance {}", row.getNumber(), appliance.getId());
 
-        BigDecimal refundAmount = row.getAmount();
-        if (!order.getApproved() && client != null) {
+        if (!order.getApproved() && order.getClient() != null) {
+            Client client = order.getClient();
+            BigDecimal refundAmount = row.getAmount();
             client.setBalance(client.getBalance().add(refundAmount));
             clientRepository.save(client);
-            log.info("Refunded {} ₴ to client {} for deleted order row", refundAmount, client.getEmail());
+            log.info("Refunded {} ₴ to client {}", refundAmount, client.getEmail());
         }
 
         orderRowRepository.delete(row);
         log.info("Order row {} deleted", rowId);
 
-        return order.getId();
+        recalculateOrderAmount(orderId);
+
+        return orderId;
+    }
+
+    @Transactional
+    public void recalculateOrderAmount(Long orderId) {
+        Orders order = ordersRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        BigDecimal newAmount = orderRowRepository.findByOrder_Id(orderId).stream()
+                .map(row -> row.getAppliance().getPrice().multiply(BigDecimal.valueOf(row.getNumber())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setAmount(newAmount);
+        ordersRepository.save(order);
+        log.info("Recalculated order amount for order {}: {} ₴", orderId, newAmount);
     }
 }

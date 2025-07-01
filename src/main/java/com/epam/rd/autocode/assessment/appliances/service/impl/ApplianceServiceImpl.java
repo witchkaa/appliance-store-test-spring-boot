@@ -7,10 +7,12 @@ import com.epam.rd.autocode.assessment.appliances.repository.ApplianceRepository
 import com.epam.rd.autocode.assessment.appliances.service.ApplianceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,15 +40,23 @@ public class ApplianceServiceImpl implements ApplianceService {
         return saved;
     }
 
+    @Transactional
     @Override
     public void delete(Long id) {
         log.info("Deleting appliance with id: {}", id);
+
         if (!applianceRepository.existsById(id)) {
             log.warn("Appliance with id {} not found for deletion", id);
             throw new ApplianceNotFoundException(id);
         }
-        applianceRepository.deleteById(id);
-        log.info("Appliance with id {} deleted successfully", id);
+
+        try {
+            applianceRepository.deleteById(id);
+            log.info("Appliance with id {} deleted successfully", id);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Cannot delete appliance with id {} - it's used in orders", id);
+            throw new IllegalStateException("appliance.delete.error.used");
+        }
     }
 
     @Override

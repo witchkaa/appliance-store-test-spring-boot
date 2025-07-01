@@ -1,17 +1,18 @@
+-- User1Pass=
 INSERT INTO app_user (name, email, password, role) VALUES
-    ('Mercury','mercury@gmail.com','$2a$10$c6g2i6orrXXF09XYxjaybO1ZcJ/dEWv85Uh7fAIkNJDrY8oBVMXmm', 'CLIENT');
+    ('Mercury','mercury@gmail.com','$2a$10$w72BPDJEnyrGiFDiXy4eu.CcE2OLk0B75wS6lYa9DfbERe06HcfdK', 'CLIENT');
 INSERT INTO client (id, card, balance) VALUES (1, '5326-1111', 0);
-
+-- User2Pass=
 INSERT INTO app_user (name, email, password, role) VALUES
-    ('Venus','venus@gmail.com','$2a$10$vOrN7B4XaVMGbjD/rSoXOe92OeXiU2QViROINwa5vBIGVzIkzKzKa', 'CLIENT');
+    ('Venus','venus@gmail.com','$2a$10$FUc/0lQw.bd5oOO72vR.cuqAF6qwIILfSmRHL5irONHTf9UjLvdJK', 'CLIENT');
 INSERT INTO client (id, card, balance) VALUES (2, '5326-2222', 0);
-
+-- User3Pass=
 INSERT INTO app_user (name, email, password, role) VALUES
-    ('Earth','earth@gmail.com','$2a$10$M3KeaROiE5d.F0s4sA3UVeypFiOSeJYGsmcaPStT9ZQNsbUCI5rpe', 'CLIENT');
+    ('Earth','earth@gmail.com','$2a$10$eGQkCz0HjVGPfBjtbTeit.6iYKZxkeewKKN57sjUM.OUN4X9Vq1Pe', 'CLIENT');
 INSERT INTO client (id, card, balance) VALUES (3, '5326-3333', 0);
-
+-- User4Pass=
 INSERT INTO app_user (name, email, password, role) VALUES
-    ('Mars','IamGod@gmail.com','$2a$10$9mFGaeLHY.XndA7ZQdauEeVjAqKJrOZ0oNMnHYbwacAuBzSkE7NSW', 'CLIENT');
+    ('Mars','IamGod@gmail.com','$2a$10$RumyqMyzu0fVZLO3OvloM.odk7dpjBTFq9gHeDfXcMc.e/T621N6y', 'CLIENT');
 INSERT INTO client (id, card, balance) VALUES (4, '5326-4444', 0);
 
 INSERT INTO app_user (name, email, password, role) VALUES

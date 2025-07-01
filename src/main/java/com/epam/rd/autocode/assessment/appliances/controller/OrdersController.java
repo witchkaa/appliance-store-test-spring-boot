@@ -11,6 +11,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -116,12 +119,20 @@ public class OrdersController {
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             ordersService.delete(id);
-            redirectAttributes.addFlashAttribute("success", "Order deleted successfully.");
+            redirectAttributes.addFlashAttribute("success", "order.deleted.success");
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_EMPLOYEE"));
+
+            return isAdmin ? "redirect:/orders" : "redirect:/profile";
+
         } catch (Exception e) {
             log.error("Error deleting order {}", id, e);
             redirectAttributes.addFlashAttribute("error", "Error deleting order: " + e.getMessage());
+            return "redirect:/profile";
         }
-        return "redirect:/orders";
     }
 
     @GetMapping("/approve/{id}")

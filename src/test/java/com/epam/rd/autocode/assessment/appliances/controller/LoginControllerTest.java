@@ -1,5 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.controller;
 
+import com.epam.rd.autocode.assessment.appliances.dto.ClientRegistrationDto;
 import com.epam.rd.autocode.assessment.appliances.model.Client;
 import com.epam.rd.autocode.assessment.appliances.model.Role;
 import com.epam.rd.autocode.assessment.appliances.service.ClientService;
@@ -20,6 +21,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+
 @ExtendWith(MockitoExtension.class)
 class LoginControllerTest {
 
@@ -39,31 +41,62 @@ class LoginControllerTest {
     private RedirectAttributes redirectAttributes;
 
     @InjectMocks
-    private LoginController controller;
+    private LoginController loginController;
 
     @Test
-    void login_WithErrorAndNoMessageKey_ShouldUseDefaultErrorMessage() {
-        Locale locale = Locale.ENGLISH;
-        when(model.asMap()).thenReturn(Collections.emptyMap());
-        when(messageSource.getMessage("login.error.invalid", null, locale)).thenReturn("Invalid username or password");
-
-        String view = controller.login("someError", null, model, locale);
-
-        verify(model).addAttribute("loginErrorMessage", "Invalid username or password");
-        assertEquals("auth/login", view);
+    void login_ShouldReturnLoginView_WhenNoError() {
+        String viewName = loginController.login(null, model, Locale.ENGLISH);
+        assertEquals("auth/login", viewName);
+        verifyNoInteractions(messageSource);
     }
 
     @Test
-    void login_WithErrorAndMessageKeyInModel_ShouldUseThatMessageKey() {
-        Locale locale = Locale.ENGLISH;
-        when(model.asMap()).thenReturn(Map.of("loginErrorMessage", "login.error.locked"));
-        when(messageSource.getMessage("login.error.locked", null, locale)).thenReturn("Account locked");
+    void login_ShouldAddErrorMessage_WhenInvalidCredentials() {
+        when(messageSource.getMessage("login.error.invalid", null, Locale.ENGLISH))
+                .thenReturn("Invalid credentials");
 
-        String view = controller.login("error", null, model, locale);
+        String viewName = loginController.login("invalid", model, Locale.ENGLISH);
 
+        assertEquals("auth/login", viewName);
+        verify(model).addAttribute("loginErrorMessage", "Invalid credentials");
+    }
+
+    @Test
+    void login_ShouldAddLockedMessage_WhenAccountLocked() {
+        when(messageSource.getMessage("login.error.locked", null, Locale.ENGLISH))
+                .thenReturn("Account locked");
+
+        String viewName = loginController.login("locked", model, Locale.ENGLISH);
+
+        assertEquals("auth/login", viewName);
         verify(model).addAttribute("loginErrorMessage", "Account locked");
-        assertEquals("auth/login", view);
     }
 
+    @Test
+    void registerForm_ShouldReturnRegisterViewWithClientDto() {
+        String viewName = loginController.registerForm(model);
 
+        assertEquals("auth/register", viewName);
+        verify(model).addAttribute(eq("client"), any(ClientRegistrationDto.class));
+    }
+
+    @Test
+    void register_ShouldSaveClientAndRedirect_WhenValidData() {
+        ClientRegistrationDto dto = new ClientRegistrationDto();
+        dto.setName("Test User");
+        dto.setEmail("test@example.com");
+        dto.setCard("123456789");
+        dto.setPassword("password");
+
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(clientService.emailExists("test@example.com")).thenReturn(false);
+        when(messageSource.getMessage("register.success", null, Locale.ENGLISH))
+                .thenReturn("Registration successful");
+
+        String viewName = loginController.register(dto, bindingResult, model, redirectAttributes, Locale.ENGLISH);
+
+        assertEquals("redirect:/login", viewName);
+        verify(clientService).save(any(Client.class));
+        verify(redirectAttributes).addFlashAttribute("message", "Registration successful");
+    }
 }
