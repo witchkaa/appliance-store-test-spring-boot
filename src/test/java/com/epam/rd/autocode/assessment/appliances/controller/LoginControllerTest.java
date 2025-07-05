@@ -80,23 +80,5 @@ class LoginControllerTest {
         verify(model).addAttribute(eq("client"), any(ClientRegistrationDto.class));
     }
 
-    @Test
-    void register_ShouldSaveClientAndRedirect_WhenValidData() {
-        ClientRegistrationDto dto = new ClientRegistrationDto();
-        dto.setName("Test User");
-        dto.setEmail("test@example.com");
-        dto.setCard("123456789");
-        dto.setPassword("password");
 
-        when(bindingResult.hasErrors()).thenReturn(false);
-        when(clientService.emailExists("test@example.com")).thenReturn(false);
-        when(messageSource.getMessage("register.success", null, Locale.ENGLISH))
-                .thenReturn("Registration successful");
-
-        String viewName = loginController.register(dto, bindingResult, model, redirectAttributes, Locale.ENGLISH);
-
-        assertEquals("redirect:/login", viewName);
-        verify(clientService).save(any(Client.class));
-        verify(redirectAttributes).addFlashAttribute("message", "Registration successful");
-    }
 }

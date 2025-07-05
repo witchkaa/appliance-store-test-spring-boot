@@ -1,8 +1,6 @@
 package com.epam.rd.autocode.assessment.appliances.config;
 
-import com.epam.rd.autocode.assessment.appliances.auth.CustomAuthenticationFailureHandler;
-import com.epam.rd.autocode.assessment.appliances.auth.CustomAuthenticationProvider;
-import com.epam.rd.autocode.assessment.appliances.auth.LoginAttemptService;
+import com.epam.rd.autocode.assessment.appliances.auth.*;
 import com.epam.rd.autocode.assessment.appliances.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +12,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -28,6 +27,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+    private final JwtTokenProvider tokenProvider;
     @Bean
     public CustomAuthenticationProvider customAuthenticationProvider() {
         return new CustomAuthenticationProvider(userDetailsService, passwordEncoder(), loginAttemptService());
@@ -79,7 +79,8 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
                         .permitAll()
-                );
+                )
+                .addFilterBefore(new JwtAuthenticationFilter(tokenProvider, userDetailsService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

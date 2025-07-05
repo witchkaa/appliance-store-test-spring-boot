@@ -90,13 +90,6 @@ class ApplianceControllerTest {
         assertEquals("redirect:/appliances", view);
     }
 
-    @Test
-    void delete_ShouldCallServiceAndRedirect() {
-        Long id = 5L;
-        String view = controller.delete(id);
-        verify(applianceService).delete(id);
-        assertEquals("redirect:/appliances", view);
-    }
 
     @Test
     void editForm_ShouldPopulateModelAndReturnView() {

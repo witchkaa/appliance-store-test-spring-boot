@@ -19,7 +19,7 @@ public class OrderRow {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private Appliance appliance;
 
     @ManyToOne

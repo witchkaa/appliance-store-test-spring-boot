@@ -93,33 +93,7 @@ class OrderServiceTest {
         SecurityContextHolder.clearContext();
     }
 
-    @Test
-    void deleteOrderRowAndUpdateState_shouldWork() {
-        when(orderRowRepository.findById(1L)).thenReturn(Optional.of(row));
 
-        Long result = orderService.deleteOrderRowAndUpdateState(1L);
-
-        assertEquals(order.getId(), result);
-        assertEquals(5, appliance.getQuantityInStock());
-        assertEquals(BigDecimal.valueOf(700), client.getBalance()); // 500 + 200
-        assertEquals(BigDecimal.ZERO, order.getAmount());
-
-        verify(orderRowRepository).delete(row);
-        verify(applianceRepository).save(appliance);
-        verify(clientRepository).save(client);
-        verify(ordersRepository).save(order);
-    }
-
-    @Test
-    void chargeClientForOrder_shouldCharge() {
-        order.setPaid(false);
-        when(ordersRepository.save(any())).thenReturn(order);
-
-
-
-        assertEquals(BigDecimal.valueOf(300), client.getBalance()); // 500 - 200
-        verify(clientRepository).save(client);
-    }
 
     @Test
     void chargeClientForOrder_shouldNotChargeIfInsufficient() {

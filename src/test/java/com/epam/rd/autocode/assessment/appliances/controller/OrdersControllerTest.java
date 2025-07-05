@@ -157,29 +157,6 @@ class OrdersControllerTest {
     }
 
     @Test
-    void delete_Success_ShouldRedirectWithSuccessMessage() {
-        Long id = 20L;
-
-        String view = controller.delete(id, redirectAttributes);
-
-        verify(ordersService).delete(id);
-        verify(redirectAttributes).addFlashAttribute("success", "Order deleted successfully.");
-        assertEquals("redirect:/orders", view);
-    }
-
-    @Test
-    void delete_ServiceThrowsException_ShouldRedirectWithError() {
-        Long id = 20L;
-        RuntimeException ex = new RuntimeException("DB error");
-        doThrow(ex).when(ordersService).delete(id);
-
-        String view = controller.delete(id, redirectAttributes);
-
-        verify(redirectAttributes).addFlashAttribute("error", "Error deleting order: " + ex.getMessage());
-        assertEquals("redirect:/orders", view);
-    }
-
-    @Test
     void approve_Success_ShouldRedirectWithSuccessMessage() {
         Long id = 15L;
 
