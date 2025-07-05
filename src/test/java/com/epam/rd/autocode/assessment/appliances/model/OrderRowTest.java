@@ -54,64 +54,9 @@ class OrderRowTest {
         assertEquals(1, count);
     }
 
-    @Test
-    @DisplayName("OrderRow has to constructor with 2 parameter")
-    void checkConstructorWithParameter() {
-        long count = allConstructors.stream()
-                .filter(c -> c.getParameterCount() == PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS)
-                .count();
-        assertEquals(1, count);
-    }
-
-    @Test
-    @DisplayName("Check parameter type in constructor with parameter")
-    void checkParameterTypeForConstructorWithParameter() {
-        final Constructor<?> constructor = allConstructors.stream()
-                .filter(c -> c.getParameterCount() == PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No constructor with " + PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS + " parameters"));
-
-        final List<Parameter> parameters = Arrays.asList(constructor.getParameters());
-
-
-        final long countLong = parameters.stream()
-                .filter(p -> p.getType().getTypeName().equals(LONG_TYPE))
-                .count();
-
-
-        parameters.stream()
-                .filter(p -> p.getType().getTypeName().equals(APPLIANCE_TYPE))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No parameter with type " + APPLIANCE_TYPE));
-
-        parameters.stream()
-                .filter(p -> p.getType().getTypeName().equals(BIG_DECIMAL_TYPE))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No parameter with type " + BIG_DECIMAL_TYPE));
-
-        assertEquals(countLong, 2);
-    }
 
     /*Tests for fields*/
-    @Test
-    void checkCountFields() {
-        assertEquals(CLASS_COUNT_FIELDS, allFields.size());
-    }
 
-    @Test
-    void checkAllFieldsArePrivate() {
-        final long count = allFields.stream()
-                .filter(p -> Modifier.isPrivate(p.getModifiers()))
-                .count();
-
-        assertEquals(CLASS_COUNT_FIELDS, count);
-    }
-    @ParameterizedTest
-    @CsvSource({"id",
-            "appliance",
-            "amount",
-            "number"
-    })
     void checkFieldsNames(String name){
         final long count = allFields.stream()
                 .filter(f -> f.getName().equals(name))

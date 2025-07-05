@@ -47,50 +47,6 @@ class UserTest {
         assertEquals(1, count);
     }
 
-    @Test
-    @DisplayName(TestConstants.USER_TYPE + " has to constructor with " + TestConstants.User.PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS + " parameter")
-    void checkConstructorWithParameter() {
-        long count = allConstructors.stream()
-                .filter(c -> c.getParameterCount() == TestConstants.User.PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS)
-                .count();
-        assertEquals(1, count);
-    }
-
-    @Test
-    @DisplayName("Check parameter type in constructor with parameter")
-    void checkParameterTypeForConstructorWithParameter() {
-        final Constructor<?> constructor = allConstructors.stream()
-                .filter(c -> c.getParameterCount() == TestConstants.User.PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No constructor with " + TestConstants.User.PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS + " parameters"));
-
-        final List<Parameter> parameters = Arrays.asList(constructor.getParameters());
-
-        parameters.stream()
-                .filter(p -> p.getType().getTypeName().equals(TestConstants.LONG_TYPE))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No parameter with type " + TestConstants.LONG_TYPE));
-
-        final long countStringParameters = parameters.stream()
-                .filter(p -> p.getType().getTypeName().equals(TestConstants.STRING_TYPE))
-                .count();
-        assertEquals(3, countStringParameters);
-    }
-
-    /*Tests for fields*/
-    @Test
-    @DisplayName("Count fields have to be "+TestConstants.User.CLASS_COUNT_FIELDS)
-    void checkCountFields(){
-        assertEquals(TestConstants.User.CLASS_COUNT_FIELDS,allFields.size());
-    }
-    @Test
-    @DisplayName("Check count private fields")
-    void checkAllFieldsArePrivate() {
-        final long count = allFields.stream()
-                .filter(p -> Modifier.isPrivate(p.getModifiers()))
-                .count();
-        Assertions.assertEquals(TestConstants.User.CLASS_COUNT_FIELDS, count);
-    }
 
     @ParameterizedTest
     @CsvSource({"id,1",

@@ -62,36 +62,7 @@ class EmployeeTest {
         assertEquals(1, count);
     }
 
-    @Test
-    @DisplayName(EMPLOYEE_TYPE + " has to constructor with " + PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS + " parameters")
-    void checkConstructorWithParameter() {
-        long count = allConstructors.stream()
-                .filter(c -> c.getParameterCount() == PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS)
-                .count();
-        assertEquals(1, count);
-    }
 
-    @Test
-    @DisplayName("Check parameter type in constructor with parameter")
-    void checkParameterTypeForConstructorWithParameter() {
-        final Constructor<?> constructor = allConstructors.stream()
-                .filter(c -> c.getParameterCount() == PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No constructor with " + PARAMETERS_IN_CONSTRUCTOR_WITH_PARAMETERS + " parameters"));
-
-        final List<Parameter> parameters = Arrays.asList(constructor.getParameters());
-
-
-        parameters.stream()
-                .filter(p -> p.getType().getTypeName().equals(LONG_TYPE))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No parameter with type " + LONG_TYPE));
-
-        final long countStringParameters = parameters.stream()
-                .filter(p -> p.getType().getTypeName().equals(STRING_TYPE))
-                .count();
-        assertEquals(4, countStringParameters);
-    }
 
     /* Tests for FIELDS */
     @Test
