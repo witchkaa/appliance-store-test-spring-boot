@@ -34,11 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new IllegalStateException("User role is null: " + email);
         }
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .roles(user.getRole().name())
-                .build();
+        return createUserPrincipal(user);
     }
 
     @PostConstruct
@@ -66,7 +62,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getId(),
                 user.getEmail(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()))
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
     }
 
