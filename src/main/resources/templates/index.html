@@ -10,10 +10,6 @@
 <body class="bg-light">
 
 <header th:insert="~{menunavy::navy}"></header>
-<div sec:authorize="isAuthenticated()">
-    <p>Авторизован как: <span sec:authentication="name"></span></p>
-    <p>Роли: <span sec:authentication="authorities"></span></p>
-</div>
 <div class="container">
     <div class="text-end mb-3">
         <a class="btn btn-outline-secondary btn-sm" th:href="@{/(lang='en')}">English</a>
